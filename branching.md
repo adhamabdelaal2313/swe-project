@@ -14,6 +14,7 @@ bugfix/<name>
 hotfix/<name>
 refactor/<name>
 docs/<name>
+page/<name>
 
 Examples:
 feature/auth-login
