@@ -86,4 +86,61 @@ router.delete('/:id', async (req, res) => {
         });
     }
 });
+// PUT /api/tasks/:id - This route will update a specific task
+router.put('/:id', async (req, res) => {
+    // 1. Get the Task ID from the URL and the data from the request body
+    const taskId = req.params.id;
+    const { title, description, is_completed } = req.body; 
+
+    // 2. Simple check to ensure we have *something* to update
+    if (!title && !description && is_completed === undefined) {
+        return res.status(400).json({ message: 'No fields provided for update.' });
+    }
+
+    try {
+        // 3. Construct the dynamic part of the SQL query
+        const fields = [];
+        const values = [];
+
+        if (title) {
+            fields.push('title = ?');
+            values.push(title);
+        }
+        if (description) {
+            fields.push('description = ?');
+            values.push(description);
+        }
+        // is_completed is a boolean, so we check for undefined
+        if (is_completed !== undefined) {
+            fields.push('is_completed = ?');
+            // MySQL uses 1/0 for true/false
+            values.push(is_completed ? 1 : 0); 
+        }
+
+        // 4. Finalize the SQL query
+        const sql = `UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`;
+        values.push(taskId); // Add the ID to the end of the values array
+
+        // 5. Execute the query
+        const [result] = await db.query(sql, values);
+
+        // 6. Check if a task was actually updated
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: `Task with ID ${taskId} not found or no new changes provided.` });
+        }
+
+        // 7. Send back a success message
+        res.json({
+            message: `Task ID ${taskId} updated successfully.`,
+            updatedId: taskId
+        });
+
+    } catch (error) {
+        console.error('Error updating task:', error);
+        res.status(500).json({ 
+            message: 'Failed to update task in the database.',
+            error: error.message 
+        });
+    }
+});
 module.exports = router;
