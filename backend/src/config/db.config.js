@@ -1,25 +1,16 @@
-// 1. This code is for connecting to MySQL
-const mysql = require('mysql2');
+import mysql from "mysql2/promise";
+import dotenv from "dotenv";
+dotenv.config();
 
-// 2. We use the secrets from your .env file here
-const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-     password: 'Hanin_Hazem_2005',
-     database: 'teamflow_project',
-     connectionLimit: 10,
-});
+// Safety check: ensure the URL exists
+const dbUrl = process.env.DATABASE_URL;
 
-// 3. Simple Check to see if the connection is successful!
-pool.promise().getConnection()
-     .then(connection => {
-     console.log("Database connection successful! 🥳");
-     connection.release();
-     })
-     .catch(err => {
-     console.error("Database connection FAILED:", err.message);
-     console.error("Please check your MySQL password and if MySQL is running.");
-     });
+if (!dbUrl) {
+    throw new Error("❌ DATABASE_URL is missing from .env file");
+}
 
-// 4. We send this connection pool out so other files can use it
-module.exports = pool.promise(); 
+export const db = mysql.createPool(dbUrl);
+
+db.query("SELECT 1")
+  .then(() => console.log("Connected to Teamflow DB✅"))
+  .catch(err => console.error("Failed to connect to Railway DB❌", err));
