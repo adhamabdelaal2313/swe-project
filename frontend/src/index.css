@@ -1,0 +1,33 @@
+:root {
+  --color-primary: #5e6dff; /* A bright primary color */
+  --color-background: #18191a; /* Dark background */
+  --color-surface: #242526; /* Slightly lighter panels/cards */
+  --color-text-light: #e4e6eb; /* Light text for dark mode */
+  --color-text-dark: #b0b3b8; /* Secondary, darker text */
+  --color-success: #4caf50;
+  --color-inprogress: #ff9800;
+  --color-todo: #9e9e9e;
+}
+
+/* Apply the global styles to the entire body */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  background-color: var(--color-background);
+  color: var(--color-text-light);
+  min-height: 100vh;
+}
+
+/* Simple reset for main elements */
+* {
+  box-sizing: border-box;
+}
+
+/* Style the main app container for flex layout */
+#root {
+  display: flex;
+  min-height: 100vh;
+}
