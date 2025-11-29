@@ -11,7 +11,7 @@ CREATE TABLE tasks (
   team VARCHAR(50) DEFAULT 'General',
   assignee VARCHAR(50) DEFAULT 'Unassigned',
   tags VARCHAR(255),                     -- Stores tags like 'Dev,API'
-  due_date DATE,
+  due_date VARCHAR(20),
   is_completed BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
