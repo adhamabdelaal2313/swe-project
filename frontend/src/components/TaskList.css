@@ -170,3 +170,8 @@
 .error-message {
   color: #ff6f61;
 }
+
+.status-badge.in-progress {
+  background-color: rgba(33, 150, 243, 0.2); /* Blue tint */
+  color: #2196f3;
+}

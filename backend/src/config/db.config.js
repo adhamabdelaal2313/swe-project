@@ -1,25 +1,24 @@
-// 1. This code is for connecting to MySQL
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise'); 
 
-// 2. We use the secrets from your .env file here
+// TEMPORARY: HARDCODED CREDENTIALS FOR TESTING ONLY
+// We are bypassing process.env because it is failing to load.
+const DB_HOST = 'shortline.proxy.rlwy.net';
+const DB_USER = 'root'; 
+const DB_PASSWORD = 'FPHNKCPheHyghwLLaNchHxzXDNsjbjUz';
+const DB_NAME = 'teamflow_project';
+const DB_PORT = 25116; 
+
+// Create the connection pool using the hardcoded variables
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-     password: 'Hanin_Hazem_2005',
-     database: 'teamflow_project',
-     connectionLimit: 10,
+    host: DB_HOST,
+    user: DB_USER,
+    password: DB_PASSWORD,
+    database: DB_NAME,
+    port: DB_PORT, 
+
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-// 3. Simple Check to see if the connection is successful!
-pool.promise().getConnection()
-     .then(connection => {
-     console.log("Database connection successful! 🥳");
-     connection.release();
-     })
-     .catch(err => {
-     console.error("Database connection FAILED:", err.message);
-     console.error("Please check your MySQL password and if MySQL is running.");
-     });
-
-// 4. We send this connection pool out so other files can use it
-module.exports = pool.promise(); 
+module.exports = pool;

@@ -1,15 +1,13 @@
 import TaskList from './components/TaskList'; 
-import './App.css'; // This one is fine
+import './App.css'; 
 
 function App() {
   return (
-    <>
-      <main className="content-area">
-        <h1>Tasks Dashboard</h1>
-        <p>Organize and track all your team's tasks in one place.</p>
-        <TaskList /> {/* Insert the new TaskList component here */}
-      </main>
-    </>
+    <main className="content-area">
+      <h1>Tasks Dashboard</h1>
+      <p>Organize and track all your team's tasks in one place.</p>
+      <TaskList /> 
+    </main>
   )
 }
 

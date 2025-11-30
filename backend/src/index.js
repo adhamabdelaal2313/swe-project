@@ -1,24 +1,31 @@
-// 1. Load imports and start the database connection check
-require('dotenv').config();
-const express = require('express'); 
-const taskRoutes = require('./routes/taskRoutes'); 
-require('./config/db.config.js'); 
+const dotenv = require('dotenv');
+dotenv.config();
+const express = require('express');
+const cors = require('cors'); // <--- NEW REQUIREMENT
+const db = require('./config/db.config'); 
+const taskRoutes = require('./routes/taskRoutes');
 
-// 2. Start the Express server part
+
+
 const app = express();
-app.use(express.json()); // Allows Express to read JSON data from requests
+
+app.use(cors());
+
+app.use(express.json());
+
+// Task routes
+app.use('/api/tasks', taskRoutes);
+
 const PORT = process.env.PORT || 3000;
-
-// 3. The server's main page message
-app.get('/', (req, res) => {
-    res.send('TeamFlow Backend is ON! 🌟');
-});
-
-// 4. Setup Router for API requests <--- app.use must be BEFORE app.listen
-app.use('/api/tasks', taskRoutes); 
-
-// 5. Tell the server to listen for requests <--- LAST BLOCK
-app.listen(PORT, () => {
-    console.log(`Server is happily listening on port ${PORT}`);
-});
-
+//database connection check and server start
+db.getConnection()
+    .then(connection => {
+        connection.release(); 
+        console.log('Server is happily listening on port 3000. Database connection is active! 🥳');
+        app.listen(PORT, () => {
+            // ...
+        });
+    })
+    .catch(err => {
+        console.error('Database connection failed:', err.message);
+    });

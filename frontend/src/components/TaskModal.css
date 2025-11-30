@@ -1,0 +1,133 @@
+/* 1. Modal Backdrop */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it's on top of everything */
+}
+
+/* 2. Modal Content Box */
+.modal-content {
+  background-color: var(--color-surface);
+  padding: 30px;
+  border-radius: 12px;
+  width: 500px;
+  max-width: 90%;
+  position: relative;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  color: var(--color-text-light);
+  border-bottom: 1px solid #333;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+
+/* 3. Form Group and Inputs */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.9em;
+  color: var(--color-text-dark);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  background-color: #18191a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: var(--color-text-light);
+  font-size: 1em;
+  resize: none;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+/* 4. Action Buttons */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.submit-button {
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.submit-button:hover:not([disabled]) {
+  background-color: #4c5adc;
+}
+
+.cancel-button {
+  background-color: #383a3d;
+  color: var(--color-text-light);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.cancel-button:hover:not([disabled]) {
+  background-color: #4c4f53;
+}
+
+/* 5. Close Button */
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  color: var(--color-text-dark);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: var(--color-text-light);
+}
+
+/* Disable styling */
+.submit-button[disabled], .cancel-button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Error Message */
+.error-message-modal {
+  color: #ff6f61;
+  font-size: 0.9em;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
