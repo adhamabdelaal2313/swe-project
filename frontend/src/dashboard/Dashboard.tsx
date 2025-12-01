@@ -5,19 +5,32 @@ import QuickActions from './components/QuickActions';
 import ActivityChart from './components/ActivityChart';
 import CreateTaskModal from './components/CreateTaskModal';
 
+interface Activity {
+  id: number;
+  action: string;
+  created_at: string;
+}
+
+interface DashboardStats {
+  totalTasks: number;
+  inProgress: number;
+  completed: number;
+  teamMembers: number;
+}
+
 export default function Dashboard() {
-  const [stats, setStats] = useState({ totalTasks: 0, inProgress: 0, completed: 0, teamMembers: 0 });
- const [activity, setActivity] = useState<any[]>([]);
+  const [stats, setStats] = useState<DashboardStats>({ totalTasks: 0, inProgress: 0, completed: 0, teamMembers: 0 });
+  const [activity, setActivity] = useState<Activity[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = () => {
-      fetch('http://localhost:5000/api/dashboard/stats')
+      fetch('/api/dashboard/stats')
         .then(res => res.json())
         .then(data => setStats(data))
         .catch(console.error);
         
-      fetch('http://localhost:5000/api/dashboard/activity')
+      fetch('/api/dashboard/activity')
         .then(res => res.json())
         .then(data => setActivity(data))
         .catch(console.error);

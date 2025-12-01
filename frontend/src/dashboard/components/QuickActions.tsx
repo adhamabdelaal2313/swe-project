@@ -1,7 +1,11 @@
 import React from 'react';
 import { Plus, Users, FileBarChart } from 'lucide-react';
 
-export default function QuickActions({ onNewTaskClick }: any) {
+interface QuickActionsProps {
+  onNewTaskClick: () => void;
+}
+
+export default function QuickActions({ onNewTaskClick }: QuickActionsProps) {
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 h-fit">
       <h2 className="text-lg font-bold text-white mb-6">Quick Actions</h2>

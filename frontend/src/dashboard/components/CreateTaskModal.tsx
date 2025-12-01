@@ -1,19 +1,28 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
 
-export default function CreateTaskModal({ isOpen, onClose }: any) {
+interface CreateTaskModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
   const [title, setTitle] = useState('');
-  const [priority, setPriority] = useState('Medium');
+  const [priority, setPriority] = useState('MEDIUM');
   const [assignee, setAssignee] = useState('Sarah Chen');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await fetch('http://localhost:5000/api/dashboard/task', {
+      const response = await fetch('/api/dashboard/task', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, priority, assignee })
+        body: JSON.stringify({ title, priority: priority.toUpperCase(), assignee })
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to create task');
+      }
       alert("Task Saved to Cloud DB!");
       setTitle('');
       onClose();
@@ -40,7 +49,9 @@ export default function CreateTaskModal({ isOpen, onClose }: any) {
           <div>
             <label className="block text-zinc-400 text-sm mb-1">Priority</label>
             <select value={priority} onChange={e => setPriority(e.target.value)} className="w-full p-2 bg-zinc-800 border border-zinc-700 text-white rounded">
-                <option>Low</option><option>Medium</option><option>High</option>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
             </select>
           </div>
           <button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white p-3 rounded-lg w-full font-medium transition-colors">Create Task</button>

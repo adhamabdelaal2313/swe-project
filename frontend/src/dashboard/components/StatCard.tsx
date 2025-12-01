@@ -1,8 +1,15 @@
 import React from 'react';
 
-export default function StatCard({ title, value, icon, color }: any) {
+interface StatCardProps {
+  title: string;
+  value: number | string;
+  icon: React.ReactNode;
+  color: 'cyan' | 'green' | 'purple' | 'orange';
+}
+
+export default function StatCard({ title, value, icon, color }: StatCardProps) {
   // Exact colors from your design
-  const theme: any = {
+  const theme: Record<StatCardProps['color'], { border: string; text: string; bg: string }> = {
     cyan:   { border: 'border-cyan-400', text: 'text-cyan-400', bg: 'bg-cyan-400/10' },
     green:  { border: 'border-lime-500', text: 'text-lime-500', bg: 'bg-lime-500/10' },
     purple: { border: 'border-purple-500', text: 'text-purple-500', bg: 'bg-purple-500/10' },

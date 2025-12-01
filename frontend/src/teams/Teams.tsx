@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, ArrowRight, Menu, X, Trash2 } from 'lucide-react';
 
 interface Member {
@@ -14,47 +14,10 @@ interface Team {
   members: Member[];
 }
 
-// --- MOCK DATA (Temporary - We will replace this with Database tomorrow) ---
-const INITIAL_TEAMS: Team[] = [
-  {
-    id: 1,
-    title: 'Frontend Team',
-    description: 'Building beautiful user interfaces',
-    color: 'bg-cyan-500',
-    members: [
-      { initials: 'EW', color: 'bg-blue-900 text-blue-200' },
-      { initials: 'TK', color: 'bg-indigo-900 text-indigo-200' },
-      { initials: 'SC', color: 'bg-cyan-900 text-cyan-200' },
-      { initials: 'AB', color: 'bg-sky-900 text-sky-200' },
-    ]
-  },
-  {
-    id: 2,
-    title: 'Backend Team',
-    description: 'Powering the infrastructure',
-    color: 'bg-purple-600',
-    members: [
-      { initials: 'MJ', color: 'bg-purple-900 text-purple-200' },
-      { initials: 'CM', color: 'bg-fuchsia-900 text-fuchsia-200' },
-      { initials: 'RD', color: 'bg-violet-900 text-violet-200' },
-    ]
-  },
-  {
-    id: 3,
-    title: 'Product Team',
-    description: 'Shaping the vision',
-    color: 'bg-zinc-200',
-    members: [
-      { initials: 'JL', color: 'bg-zinc-800 text-zinc-300' },
-      { initials: 'ST', color: 'bg-stone-800 text-stone-300' },
-    ]
-  }
-];
-
-export default function App() {
-  // Use Mock Data as default state
-  const [teams, setTeams] = useState<Team[]>(INITIAL_TEAMS);
+export default function Teams() {
+  const [teams, setTeams] = useState<Team[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Form State
   const [newTeam, setNewTeam] = useState({
@@ -63,31 +26,90 @@ export default function App() {
     color: 'bg-purple-600'
   });
 
-  // 1. CREATE TEAM (Local Simulation)
-  const handleCreateTeam = () => {
-    if (!newTeam.title) return;
-
-    const fakeTeam: Team = {
-      id: Date.now(), // Generate random ID
-      title: newTeam.title,
-      description: newTeam.description,
-      color: newTeam.color,
-      members: [
-        { initials: 'ME', color: 'bg-emerald-900 text-emerald-200' } // Fake member
-      ]
+  // Fetch teams from API
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const response = await fetch('/api/teams');
+        if (response.ok) {
+          const data = await response.json();
+          // Convert API data to component format
+          const formattedTeams = data.map((team: any) => ({
+            id: team.id,
+            title: team.title,
+            description: team.description || '',
+            color: team.color || 'bg-purple-600',
+            members: team.members || []
+          }));
+          setTeams(formattedTeams);
+        }
+      } catch (error) {
+        console.error('Failed to fetch teams:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    // Update UI immediately (No database yet)
-    setTeams([...teams, fakeTeam]);
-    setIsModalOpen(false);
-    setNewTeam({ title: '', description: '', color: 'bg-purple-600' });
+    fetchTeams();
+  }, []);
+
+  // CREATE TEAM
+  const handleCreateTeam = async () => {
+    if (!newTeam.title) return;
+
+    try {
+      const response = await fetch('/api/teams', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newTeam.title,
+          description: newTeam.description,
+          color: newTeam.color,
+          members: []
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setTeams([...teams, {
+          id: data.id,
+          title: newTeam.title,
+          description: newTeam.description,
+          color: newTeam.color,
+          members: []
+        }]);
+        setIsModalOpen(false);
+        setNewTeam({ title: '', description: '', color: 'bg-purple-600' });
+      }
+    } catch (error) {
+      console.error('Failed to create team:', error);
+    }
   };
 
-  // 2. DELETE TEAM (Local Simulation)
-  const handleDelete = (id: number) => {
-    if(!confirm("Delete this team?")) return;
-    setTeams(teams.filter(t => t.id !== id));
+  // DELETE TEAM
+  const handleDelete = async (id: number) => {
+    if (!confirm("Delete this team?")) return;
+
+    try {
+      const response = await fetch(`/api/teams/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setTeams(teams.filter(t => t.id !== id));
+      }
+    } catch (error) {
+      console.error('Failed to delete team:', error);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans p-6 md:p-8 flex items-center justify-center">
+        <p className="text-zinc-500">Loading teams...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans p-6 md:p-8">
@@ -125,13 +147,21 @@ export default function App() {
 
               <div className="flex items-center gap-3">
                 <div className="flex -space-x-2">
-                  {team.members.map((member, i) => (
-                    <div key={i} className={`w-8 h-8 rounded-full border-2 border-[#121212] flex items-center justify-center text-[10px] font-bold ${member.color}`}>
-                      {member.initials}
-                    </div>
-                  ))}
+                  {team.members && team.members.length > 0 ? (
+                    team.members.map((member: any, i: number) => {
+                      const initials = typeof member === 'string' ? member.substring(0, 2).toUpperCase() : member.initials || 'ME';
+                      const color = typeof member === 'string' ? 'bg-emerald-900 text-emerald-200' : member.color || 'bg-emerald-900 text-emerald-200';
+                      return (
+                        <div key={i} className={`w-8 h-8 rounded-full border-2 border-[#121212] flex items-center justify-center text-[10px] font-bold ${color}`}>
+                          {initials}
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <span className="text-zinc-600 text-xs">No members</span>
+                  )}
                 </div>
-                <span className="text-zinc-500 text-xs font-medium">{team.members.length} members</span>
+                <span className="text-zinc-500 text-xs font-medium">{team.members?.length || 0} members</span>
               </div>
 
               <div className="mt-6 pt-4 border-t border-zinc-800/50 flex justify-between items-center">
@@ -142,6 +172,11 @@ export default function App() {
             </div>
           </div>
         ))}
+        {teams.length === 0 && (
+          <div className="col-span-full text-center py-12 text-zinc-500">
+            <p>No teams yet. Create your first team!</p>
+          </div>
+        )}
       </div>
 
       {/* CREATE MODAL */}
@@ -187,3 +222,4 @@ export default function App() {
     </div>
   );
 }
+

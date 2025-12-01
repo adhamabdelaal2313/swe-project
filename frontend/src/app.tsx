@@ -2,9 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { LayoutDashboard, KanbanSquare, Users } from 'lucide-react';
 
-// Import the pages you just made
-import Dashboard from '../dashboard-frontend/Dashboard';
-import Kanban from './pages/Kanban';
+// Feature-first architecture: Import from feature folders
+import Dashboard from './dashboard/Dashboard';
+import Kanban from './kanban/Kanban';
+import Teams from './teams/Teams';
 
 export default function App() {
   return (
@@ -35,7 +36,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/kanban" element={<Kanban />} />
-            {/* You can add Teams later */}
+            <Route path="/teams" element={<Teams />} />
           </Routes>
         </main>
 
