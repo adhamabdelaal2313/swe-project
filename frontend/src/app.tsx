@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, KanbanSquare, Users } from 'lucide-react';
 
 // Feature-first architecture: Import from feature folders
@@ -7,16 +7,42 @@ import Dashboard from './dashboard/Dashboard';
 import Kanban from './kanban/Kanban';
 import Teams from './teams/Teams';
 
+// Component to update page title based on route
+function PageTitle() {
+  const location = useLocation();
+  
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      '/': 'Dashboard - TeamFlow',
+      '/kanban': 'Kanban Board - TeamFlow',
+      '/teams': 'Teams - TeamFlow',
+    };
+    
+    document.title = titles[location.pathname] || 'TeamFlow';
+  }, [location]);
+  
+  return null;
+}
+
 export default function App() {
   return (
     <Router>
+      <PageTitle />
       <div className="flex h-screen bg-[#09090b] text-white">
         
         {/* SIDEBAR NAVIGATION */}
         <aside className="w-20 border-r border-zinc-800 flex flex-col items-center py-6 gap-6">
-          <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-500/20">
-            TF
-          </div>
+          <Link to="/" className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-500/20 hover:opacity-80 transition-opacity">
+            <img 
+              src="/TF-Logo.png" 
+              alt="TeamFlow Logo" 
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                console.error('Logo failed to load:', e);
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </Link>
           
           <nav className="flex flex-col gap-4 w-full px-2">
             <Link to="/">
