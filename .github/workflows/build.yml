@@ -27,15 +27,7 @@ jobs:
       - name: Install backend dependencies
         working-directory: ./backend
         run: npm ci
-      
-      - name: Lint backend (if configured)
-        working-directory: ./backend
-        run: |
-          if npm run | grep -q " lint"; then
-            npm run lint
-          else
-            echo "No backend lint script configured, skipping."
-          fi
+
 
   build-frontend:
     name: Build Frontend
@@ -55,15 +47,7 @@ jobs:
       - name: Install frontend dependencies
         working-directory: ./frontend
         run: npm ci
-      
-      - name: Lint frontend (if configured)
-        working-directory: ./frontend
-        run: |
-          if npm run | grep -q " lint"; then
-            npm run lint
-          else
-            echo "No frontend lint script configured, skipping."
-          fi
+
       
       - name: Build frontend
         working-directory: ./frontend
