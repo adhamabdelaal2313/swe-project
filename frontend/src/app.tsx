@@ -1,11 +1,21 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, KanbanSquare, Users } from 'lucide-react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation
+} from 'react-router-dom';
 
 // Feature-first architecture: Import from feature folders
 import Dashboard from './dashboard/Dashboard';
 import Kanban from './kanban/Kanban';
 import Teams from './teams/Teams';
+import Portal from './portal/portal';
+import Sidebar from './sidebar/sidebar';
+import SidebarToggle from './sidebar/Components/Toggle/sidebartoggle';
+import { AuthProvider, useAuth } from './portal/Context/AuthContext';
+import { SidebarProvider, useSidebar } from './sidebar/Components/Context/SidebarContext';
 
 // Component to update page title based on route
 function PageTitle() {
@@ -13,7 +23,9 @@ function PageTitle() {
   
   useEffect(() => {
     const titles: Record<string, string> = {
-      '/': 'Dashboard - TeamFlow',
+      '/': 'Portal - TeamFlow',
+      '/portal': 'Portal - TeamFlow',
+      '/dashboard': 'Dashboard - TeamFlow',
       '/kanban': 'Kanban Board - TeamFlow',
       '/teams': 'Teams - TeamFlow',
     };
@@ -24,57 +36,85 @@ function PageTitle() {
   return null;
 }
 
-export default function App() {
-  return (
-    <Router>
-      <PageTitle />
-      <div className="flex h-screen bg-[#09090b] text-white">
-        
-        {/* SIDEBAR NAVIGATION */}
-        <aside className="w-20 border-r border-zinc-800 flex flex-col items-center py-6 gap-6">
-          <Link to="/" className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden shadow-lg shadow-indigo-500/20 hover:opacity-80 transition-opacity">
-            <img 
-              src="/TF-Logo.png" 
-              alt="TeamFlow Logo" 
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                console.error('Logo failed to load:', e);
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          </Link>
-          
-          <nav className="flex flex-col gap-4 w-full px-2">
-            <Link to="/">
-              <NavItem icon={<LayoutDashboard size={24} />} />
-            </Link>
-            <Link to="/kanban">
-              <NavItem icon={<KanbanSquare size={24} />} />
-            </Link>
-            <Link to="/teams">
-              <NavItem icon={<Users size={24} />} />
-            </Link>
-          </nav>
-        </aside>
+function ProtectedLayout({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isAuthReady } = useAuth();
+  const location = useLocation();
+  const { isOpen } = useSidebar();
 
-        {/* MAIN CONTENT AREA */}
-        <main className="flex-1 overflow-auto">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/kanban" element={<Kanban />} />
-            <Route path="/teams" element={<Teams />} />
-          </Routes>
-        </main>
-
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
+        <span className="text-zinc-500 text-sm">Loading...</span>
       </div>
-    </Router>
+    );
+  }
+
+  if (!isAuthenticated && isAuthReady) {
+    return <Navigate to="/portal" state={{ from: location }} replace />;
+  }
+
+  return (
+    <div className="min-h-screen bg-[#09090b] text-white flex overflow-hidden">
+      <Sidebar />
+
+      {/* Sidebar toggle button - visible when sidebar is closed */}
+      <div className={`fixed top-4 left-4 z-[120] transition-opacity duration-300 ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        <SidebarToggle />
+      </div>
+
+      {/* Main content with proper spacing to avoid overlap with toggle button */}
+      <main className={`flex-1 transition-all duration-300 ${isOpen ? 'md:ml-[260px]' : 'md:ml-0'} min-h-screen overflow-x-hidden overflow-y-auto ${isOpen ? 'px-4 md:px-8' : 'pl-20 md:pl-24 pr-4 md:pr-8'} py-6`}>
+        {children}
+      </main>
+    </div>
   );
 }
 
-function NavItem({ icon }: { icon: React.ReactNode }) {
+function AppRoutes() {
   return (
-    <div className="w-full h-12 flex items-center justify-center rounded-xl hover:bg-zinc-900 hover:text-white text-zinc-400 transition-colors cursor-pointer">
-      {icon}
-    </div>
+    <Routes>
+      <Route path="/" element={<Navigate to="/portal" replace />} />
+      <Route path="/portal" element={<Portal />} />
+
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedLayout>
+            <Dashboard />
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/kanban"
+        element={
+          <ProtectedLayout>
+            <Kanban />
+          </ProtectedLayout>
+        }
+      />
+      <Route
+        path="/teams"
+        element={
+          <ProtectedLayout>
+            <Teams />
+          </ProtectedLayout>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/portal" replace />} />
+    </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <SidebarProvider>
+        <Router>
+          <PageTitle />
+          <AppRoutes />
+        </Router>
+      </SidebarProvider>
+    </AuthProvider>
   );
 }

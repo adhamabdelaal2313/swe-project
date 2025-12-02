@@ -1,4 +1,5 @@
 const db = require("../config/db.config");
+const logActivity = require('../utils/activityLogger');
 
 // --- GET: Dashboard Stats ---
 const getDashboardStats = async (req, res) => {
@@ -39,8 +40,7 @@ const createQuickTask = async (req, res) => {
       'INSERT INTO tasks (title, priority, status, assignee) VALUES (?, ?, "TODO", ?)',
       [title, priority, assignee || 'Unassigned']
     );
-    // Log activity
-    await db.query('INSERT INTO activities (action) VALUES (?)', [`created task: ${title}`]);
+    await logActivity(`Quick task created: ${title}`);
     res.status(201).json({ message: "Task Saved" });
   } catch (error) {
     console.error(error);
