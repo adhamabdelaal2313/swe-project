@@ -18,7 +18,7 @@ const getAllTasks = async (req, res) => {
 
 // POST: Create a new task
 const createTask = async (req, res) => {
-    const { title, description } = req.body; 
+    const { title, description, userId, userName } = req.body; 
 
     if (!title) {
         return res.status(400).json({ message: 'Task title is required!' });
@@ -28,7 +28,7 @@ const createTask = async (req, res) => {
         const sql = 'INSERT INTO tasks (title, description) VALUES (?, ?)';
         const [result] = await db.query(sql, [title, description]);
 
-        await logActivity(`Created task: ${title} (#${result.insertId})`);
+        await logActivity(`Created task: ${title} (#${result.insertId})`, userId || null, userName || null);
 
         res.status(201).json({
             message: 'Task created successfully! 🎉',
@@ -81,7 +81,8 @@ const updateTask = async (req, res) => {
             });
         }
 
-        await logActivity(`Updated task ${taskId}`);
+        const { userId, userName } = req.body;
+        await logActivity(`Updated task ${taskId}`, userId || null, userName || null);
 
         res.json({
             message: `Task ID ${taskId} updated successfully.`,
@@ -108,7 +109,8 @@ const deleteTask = async (req, res) => {
             return res.status(404).json({ message: `Task with ID ${taskId} not found.` });
         }
 
-        await logActivity(`Deleted task ${taskId}`);
+        const { userId, userName } = req.body;
+        await logActivity(`Deleted task ${taskId}`, userId || null, userName || null);
 
         res.json({
             message: `Task ID ${taskId} deleted successfully.`,

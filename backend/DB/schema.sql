@@ -36,7 +36,10 @@ CREATE TABLE tasks (
 CREATE TABLE activities (
   id INT AUTO_INCREMENT PRIMARY KEY,
   action VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  user_id INT,
+  user_name VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE teams (
@@ -50,7 +53,4 @@ CREATE TABLE teams (
 -- Insert demo users
 INSERT INTO users (name, email, password, role) VALUES
 ('Admin User', 'admin@teamflow.com', 'admin123', 'admin'),
-
-
-INSERT INTO users (name, email, password, role) VALUES
-('Adham','A.ahmad2313@nu.edu.eg', 'adhoma2026', 'user');
+('Adham', 'A.ahmad2313@nu.edu.eg', 'adhoma2026', 'user');

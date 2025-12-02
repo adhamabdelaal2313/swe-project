@@ -37,7 +37,8 @@ const createTeam = async (req, res) => {
     ];
 
     const [result] = await db.query(sql, [values]);
-    await logActivity(`Team created: ${req.body.title} (#${result.insertId})`);
+    const { userId, userName } = req.body;
+    await logActivity(`Team created: ${req.body.title} (#${result.insertId})`, userId || null, userName || null);
     res.json({ message: "Team created", id: result.insertId });
   } catch (err) {
     console.error("❌ SAVE ERROR:", err.message);
@@ -50,7 +51,8 @@ const deleteTeam = async (req, res) => {
   try {
     const sql = "DELETE FROM teams WHERE id = ?";
     await db.query(sql, [req.params.id]);
-    await logActivity(`Team deleted: ${req.params.id}`);
+    const { userId, userName } = req.body;
+    await logActivity(`Team deleted: ${req.params.id}`, userId || null, userName || null);
     res.json({ message: "Team deleted" });
   } catch (err) {
     console.error("❌ DELETE ERROR:", err.message);
