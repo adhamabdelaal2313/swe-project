@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Zap, Sparkles, Users } from 'lucide-react';
+import { Check, Zap, Sparkles, Circle } from 'lucide-react';
 import StatCard from './components/StatCard';
 import QuickActions from './components/QuickActions';
 import ActivityChart from './components/ActivityChart';
@@ -13,13 +13,13 @@ interface Activity {
 
 interface DashboardStats {
   totalTasks: number;
+  todo: number;
   inProgress: number;
   completed: number;
-  teamMembers: number;
 }
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats>({ totalTasks: 0, inProgress: 0, completed: 0, teamMembers: 0 });
+  const [stats, setStats] = useState<DashboardStats>({ totalTasks: 0, todo: 0, inProgress: 0, completed: 0 });
   const [activity, setActivity] = useState<Activity[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -55,7 +55,7 @@ export default function Dashboard() {
           <StatCard title="Total Tasks" value={stats.totalTasks} icon={<Check />} color="cyan" />
           <StatCard title="In Progress" value={stats.inProgress} icon={<Zap />} color="green" />
           <StatCard title="Completed" value={stats.completed} icon={<Sparkles />} color="purple" />
-          <StatCard title="Members" value={stats.teamMembers} icon={<Users />} color="orange" />
+          <StatCard title="To do" value={stats.todo} icon={<Circle />} color="orange" />
         </div>
 
         {/* ROW 2: MAIN CONTENT (Chart vs Actions) */}
