@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 :root {
   --color-primary: #5e6dff; /* A bright primary color */
   --color-background: #18191a; /* Dark background */
@@ -31,3 +32,8 @@ body {
   display: flex;
   min-height: 100vh;
 }
+=======
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+>>>>>>> bd9139b48f13aa53170d743a253a4ca230691792
