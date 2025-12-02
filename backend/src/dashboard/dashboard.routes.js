@@ -1,9 +1,20 @@
+// backend/src/dashboard/dashboard.routes.js
+
 const express = require('express');
 const router = express.Router();
-const { getDashboardStats, getRecentActivity, createQuickTask } = require('./dashboard.controller');
+const dashboardController = require('./dashboard.controller'); 
 
-router.get("/stats", getDashboardStats);
-router.get("/activity", getRecentActivity);
-router.post("/task", createQuickTask);
+// --- GET Routes ---
+// These routes fetch data for the dashboard UI elements.
+// URL: GET /api/dashboard/stats
+router.get('/stats', dashboardController.getDashboardStats);
+
+// URL: GET /api/dashboard/activity
+router.get('/activity', dashboardController.getRecentActivity);
+
+// --- POST Routes ---
+// These routes handle submissions from the QuickActions modals.
+// URL: POST /api/dashboard/task
+router.post('/task', dashboardController.createQuickTask);
 
 module.exports = router;

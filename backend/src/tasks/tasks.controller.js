@@ -1,4 +1,5 @@
 const db = require('../config/db.config');
+const logActivity = require('../utils/activityLogger');
 
 // GET: Fetch all tasks (Your advanced search logic!)
 const getAllTasks = async (req, res) => {
@@ -46,7 +47,7 @@ const getAllTasks = async (req, res) => {
 
 // POST: Create a new task (Your full creation logic!)
 const createTask = async (req, res) => {
-    const { title, description, status, priority, team, assignee, tags, due_date } = req.body;
+    const { title, description, status, priority, team, assignee, tags, due_date, userId, userName } = req.body;
 
     if (!title) {
         return res.status(400).json({ message: 'Title is required for a new task.' });
@@ -71,9 +72,14 @@ const createTask = async (req, res) => {
     try {
         const [result] = await db.query(sql, params);
 
-        res.status(201).json({ 
+        // Log the activity
+        await logActivity(`Created task: ${title} (#${result.insertId})`, userId || null, userName || null);
+
+        res.status(201).json({
             id: result.insertId, 
-            message: 'Task created successfully!' 
+            message: 'Task created successfully! 🎉',
+            taskId: result.insertId,
+            title: title
         });
     } catch (error) {
         console.error('DATABASE ERROR during task creation:', error);
@@ -87,7 +93,7 @@ const createTask = async (req, res) => {
 // PUT: Update a task (Your advanced update logic!)
 const updateTask = async (req, res) => {
     const taskId = req.params.id;
-    const { title, description, is_completed, status, priority, team, assignee, tags, due_date } = req.body;
+    const { title, description, is_completed, status, priority, team, assignee, tags, due_date, userId, userName } = req.body;
 
     try {
         const fields = [];
@@ -117,7 +123,13 @@ const updateTask = async (req, res) => {
             return res.status(404).json({ message: 'Task not found.' });
         }
 
-        res.json({ message: 'Task updated successfully.' });
+        // Log the activity
+        await logActivity(`Updated task ${taskId}`, userId || null, userName || null);
+
+        res.json({
+            message: `Task ID ${taskId} updated successfully.`,
+            updatedId: taskId
+        });
     } catch (error) {
         console.error('Error updating task:', error);
         res.status(500).json({ message: 'Failed to update task.' });
@@ -126,7 +138,9 @@ const updateTask = async (req, res) => {
 
 // DELETE: Delete a task (Remote's clean logic combined with your check)
 const deleteTask = async (req, res) => {
-    const taskId = req.params.id; 
+    const taskId = req.params.id;
+    const { userId, userName } = req.body;
+    
     try {
         const sql = 'DELETE FROM tasks WHERE id = ?';
         const [result] = await db.query(sql, [taskId]);
@@ -134,7 +148,14 @@ const deleteTask = async (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: 'Task not found.' });
         }
-        res.json({ message: 'Task deleted successfully.' });
+
+        // Log the activity
+        await logActivity(`Deleted task ${taskId}`, userId || null, userName || null);
+
+        res.json({
+            message: `Task ID ${taskId} deleted successfully.`,
+            deletedId: taskId
+        });
     } catch (error) {
         console.error('Error deleting task:', error);
         res.status(500).json({ message: 'Failed to delete task.' });
