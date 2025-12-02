@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Menu, 
   Plus,  
   ChevronRight, 
   ChevronLeft,
@@ -261,20 +260,15 @@ export default function Kanban() {
   const getTasksByStatus = (status: Status) => tasks.filter(t => t.status === status);
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans p-6 md:p-8">
+    <div className="w-full bg-[#09090b] text-zinc-100 font-sans">
       
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-        <div className="flex items-start gap-4">
-          <button className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 hover:border-zinc-700 transition-colors">
-            <Menu className="text-zinc-400" size={20} />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-white mb-1">Kanban Board</h1>
-            <p className="text-zinc-500 text-sm">
-              {isBackendOffline ? 'Offline Mode' : 'Connected to Database'}
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-white mb-1">Kanban Board</h1>
+          <p className="text-zinc-500 text-sm">
+            {isBackendOffline ? 'Offline Mode' : 'Connected to Database'}
+          </p>
         </div>
         
         <button 

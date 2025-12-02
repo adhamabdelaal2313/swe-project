@@ -1,4 +1,5 @@
 const db = require('../config/db.config');
+const logActivity = require('../utils/activityLogger');
 
 // GET: Fetch all tasks
 const getAllTasks = async (req, res) => {
@@ -26,6 +27,8 @@ const createTask = async (req, res) => {
     try {
         const sql = 'INSERT INTO tasks (title, description) VALUES (?, ?)';
         const [result] = await db.query(sql, [title, description]);
+
+        await logActivity(`Created task: ${title} (#${result.insertId})`);
 
         res.status(201).json({
             message: 'Task created successfully! 🎉',
@@ -78,6 +81,8 @@ const updateTask = async (req, res) => {
             });
         }
 
+        await logActivity(`Updated task ${taskId}`);
+
         res.json({
             message: `Task ID ${taskId} updated successfully.`,
             updatedId: taskId
@@ -102,6 +107,8 @@ const deleteTask = async (req, res) => {
         if (result.affectedRows === 0) {
             return res.status(404).json({ message: `Task with ID ${taskId} not found.` });
         }
+
+        await logActivity(`Deleted task ${taskId}`);
 
         res.json({
             message: `Task ID ${taskId} deleted successfully.`,

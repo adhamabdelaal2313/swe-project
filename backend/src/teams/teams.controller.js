@@ -1,4 +1,5 @@
 const db = require('../config/db.config');
+const logActivity = require('../utils/activityLogger');
 
 // GET: Get all teams
 const getAllTeams = async (req, res) => {
@@ -36,6 +37,7 @@ const createTeam = async (req, res) => {
     ];
 
     const [result] = await db.query(sql, [values]);
+    await logActivity(`Team created: ${req.body.title} (#${result.insertId})`);
     res.json({ message: "Team created", id: result.insertId });
   } catch (err) {
     console.error("❌ SAVE ERROR:", err.message);
@@ -48,6 +50,7 @@ const deleteTeam = async (req, res) => {
   try {
     const sql = "DELETE FROM teams WHERE id = ?";
     await db.query(sql, [req.params.id]);
+    await logActivity(`Team deleted: ${req.params.id}`);
     res.json({ message: "Team deleted" });
   } catch (err) {
     console.error("❌ DELETE ERROR:", err.message);

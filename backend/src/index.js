@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 
 // Feature-first architecture: Import routes from each feature folder
+const portalRoutes = require('./portal/portal.routes');
 const tasksRoutes = require('./tasks/tasks.routes');
 const kanbanRoutes = require('./kanban/kanban.routes');
 const teamsRoutes = require('./teams/teams.routes');
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 });
 
 // 4. Setup Routers for API requests (Feature-first architecture)
+app.use('/api/portal', portalRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/kanban', kanbanRoutes);
 app.use('/api/teams', teamsRoutes);
