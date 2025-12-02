@@ -1,17 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const {
-    getAllTasks,
-    createTask,
-    updateTask,
-    deleteTask
-} = require('./tasks.controller');
+const tasksController = require('./tasks.controller');
 
-// Route definitions - map URLs to controller functions
-router.get('/', getAllTasks);
-router.post('/', createTask);
-router.put('/:id', updateTask);
-router.delete('/:id', deleteTask);
+// All routes are defined here, linking to the controller functions
+router.get('/', tasksController.getAllTasks);
+router.post('/', tasksController.createTask);
+router.put('/:id', tasksController.updateTask);
+router.delete('/:id', tasksController.deleteTask);
 
 module.exports = router;
 
