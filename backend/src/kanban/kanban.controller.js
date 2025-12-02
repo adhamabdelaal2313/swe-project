@@ -1,4 +1,5 @@
 const db = require('../config/db.config');
+const logActivity = require('../utils/activityLogger');
 
 // GET: Get all tasks for kanban board
 const getKanbanTasks = async (req, res) => {
@@ -38,6 +39,7 @@ const createKanbanTask = async (req, res) => {
     ];
 
     const [result] = await db.query(sql, [values]);
+    await logActivity(`Kanban task created: ${req.body.title} (#${result.insertId})`);
     res.json({ message: "Task created", id: result.insertId });
   } catch (err) {
     console.error("❌ SAVE ERROR:", err.message);
@@ -50,6 +52,7 @@ const updateKanbanTaskStatus = async (req, res) => {
   try {
     const sql = "UPDATE tasks SET `status` = ? WHERE id = ?";
     await db.query(sql, [req.body.status, req.params.id]);
+    await logActivity(`Kanban task ${req.params.id} moved to ${req.body.status}`);
     res.json({ message: "Status updated" });
   } catch (err) {
     console.error("❌ UPDATE ERROR:", err.message);
@@ -62,6 +65,7 @@ const deleteKanbanTask = async (req, res) => {
   try {
     const sql = "DELETE FROM tasks WHERE id = ?";
     await db.query(sql, [req.params.id]);
+    await logActivity(`Kanban task ${req.params.id} deleted`);
     res.json({ message: "Task deleted" });
   } catch (err) {
     console.error("❌ DELETE ERROR:", err.message);

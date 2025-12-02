@@ -40,7 +40,7 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className="p-8 bg-black min-h-screen text-white font-sans">
+    <div className="w-full text-white font-sans">
       
       {/* HEADER */}
       <div className="mb-8">
