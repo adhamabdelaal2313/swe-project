@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, Zap, Sparkles, Circle } from 'lucide-react';
 import StatCard from './components/StatCard';
 import QuickActions from './components/QuickActions';
 import ActivityChart from './components/ActivityChart';
 import CreateTaskModal from './components/CreateTaskModal';
 import { CreateTeamModal } from './components/CreateTeamModal';
-import { useAuth } from '../portal/Context/AuthContext';
 
 interface Activity {
   id: number;
@@ -24,7 +23,6 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({ totalTasks: 0, todo: 0, inProgress: 0, completed: 0 });
   const [activity, setActivity] = useState<Activity[]>([]);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
