@@ -1,82 +1,81 @@
-const db = require('../config/db.config');
-const logActivity = require('../utils/activityLogger');
+const mysql = require('mysql2');
+require('dotenv').config();
 
-// GET: Get all tasks for kanban board
-const getKanbanTasks = async (req, res) => {
-  try {
-    const sql = "SELECT * FROM tasks ORDER BY created_at DESC";
-    const [data] = await db.query(sql);
-    
-    // Format tags from comma-separated string to array
-    const formattedData = data.map(task => ({
-      ...task,
-      tags: task.tags ? task.tags.split(',') : []
-    }));
-    
-    res.json(formattedData);
-  } catch (err) {
-    console.error("❌ READ ERROR:", err.message);
-    res.status(500).json({ error: err.message });
-  }
+// Create the pool inside the controller as requested
+const db = mysql.createPool({
+    uri: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+}).promise();
+
+// --- TASKS LOGIC ---
+
+exports.getTasks = async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT * FROM tasks ORDER BY created_at DESC");
+        const formatted = rows.map(t => ({ 
+            ...t, 
+            tags: t.tags ? t.tags.split(',') : [] 
+        }));
+        res.json(formatted);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
-// POST: Create a new task
-const createKanbanTask = async (req, res) => {
-  try {
-    const sql = "INSERT INTO tasks (`title`, `description`, `status`, `priority`, `team`, `assignee`, `tags`, `due_date`) VALUES (?)";
-    
-    const tagsString = Array.isArray(req.body.tags) ? req.body.tags.join(',') : '';
-    
-    const values = [
-      req.body.title,
-      req.body.description || '',
-      req.body.status || 'TODO',
-      req.body.priority || 'MEDIUM',
-      req.body.team || 'General',
-      req.body.assignee || 'Unassigned',
-      tagsString,
-      req.body.due_date || ''
-    ];
-
-    const [result] = await db.query(sql, [values]);
-    await logActivity(`Kanban task created: ${req.body.title} (#${result.insertId})`);
-    res.json({ message: "Task created", id: result.insertId });
-  } catch (err) {
-    console.error("❌ SAVE ERROR:", err.message);
-    res.status(500).json({ error: err.message });
-  }
+exports.createTask = async (req, res) => {
+    try {
+        const { title, description, status, priority, team, assignee, tags, due_date } = req.body;
+        const tagsString = Array.isArray(tags) ? tags.join(',') : '';
+        
+        // Matches your Tasks Schema
+        const sql = `INSERT INTO tasks (title, description, status, priority, team, assignee, tags, due_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        const [result] = await db.query(sql, [title, description, status, priority, team, assignee, tagsString, due_date]);
+        
+        res.json({ id: result.insertId, message: "Task Created" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
-// PUT: Update task status
-const updateKanbanTaskStatus = async (req, res) => {
-  try {
-    const sql = "UPDATE tasks SET `status` = ? WHERE id = ?";
-    await db.query(sql, [req.body.status, req.params.id]);
-    await logActivity(`Kanban task ${req.params.id} moved to ${req.body.status}`);
-    res.json({ message: "Status updated" });
-  } catch (err) {
-    console.error("❌ UPDATE ERROR:", err.message);
-    res.status(500).json({ error: err.message });
-  }
+exports.updateTaskStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        const { id } = req.params;
+        await db.query("UPDATE tasks SET status = ? WHERE id = ?", [status, id]);
+        res.json({ message: "Status Updated" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
-// DELETE: Delete a task
-const deleteKanbanTask = async (req, res) => {
-  try {
-    const sql = "DELETE FROM tasks WHERE id = ?";
-    await db.query(sql, [req.params.id]);
-    await logActivity(`Kanban task ${req.params.id} deleted`);
-    res.json({ message: "Task deleted" });
-  } catch (err) {
-    console.error("❌ DELETE ERROR:", err.message);
-    res.status(500).json({ error: err.message });
-  }
+exports.deleteTask = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await db.query("DELETE FROM tasks WHERE id = ?", [id]);
+        res.json({ message: "Task Deleted" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
-module.exports = {
-  getKanbanTasks,
-  createKanbanTask,
-  updateKanbanTaskStatus,
-  deleteKanbanTask
+// --- DROPDOWN HELPERS (NEW) ---
+
+exports.getUsers = async (req, res) => {
+    try {
+        // Selects name for the Assignee dropdown
+        const [rows] = await db.query("SELECT id, name FROM users ORDER BY name ASC");
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
+exports.getTeams = async (req, res) => {
+    try {
+        // Selects team_name for the Team dropdown
+        const [rows] = await db.query("SELECT team_id, team_name FROM teams ORDER BY team_name ASC");
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
