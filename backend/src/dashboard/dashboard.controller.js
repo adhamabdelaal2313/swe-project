@@ -1,5 +1,5 @@
 const db = require("../config/db.config");
-const logActivity = require('../utils/activityLogger');
+const { logActivity } = require('../utils/activityLogger');
 
 // --- GET: Dashboard Stats ---
 const getDashboardStats = async (req, res) => {
@@ -7,14 +7,15 @@ const getDashboardStats = async (req, res) => {
     // 1. Run SQL Queries
     const [total] = await db.query('SELECT COUNT(*) as count FROM tasks');
     const [todo] = await db.query('SELECT COUNT(*) as count FROM tasks WHERE status = "TODO"');
+    const [inProgress] = await db.query('SELECT COUNT(*) as count FROM tasks WHERE status = "IN_PROGRESS"');
     const [done] = await db.query('SELECT COUNT(*) as count FROM tasks WHERE status = "DONE"');
     
     // 2. Send Data
     res.json({
       totalTasks: total[0].count,
-      inProgress: todo[0].count, 
-      completed: done[0].count,
-      teamMembers: 4 // Placeholder
+      todo: todo[0].count,
+      inProgress: inProgress[0].count, 
+      completed: done[0].count
     });
   } catch (error) {
     console.error(error);
