@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, KanbanSquare, Users } from 'lucide-react';
+import { LayoutDashboard, KanbanSquare, Users, ListTodo } from 'lucide-react';
 import { useAuth } from '../portal/Context/AuthContext';
 import { useSidebar } from './Components/Context/SidebarContext';
 
@@ -14,6 +14,7 @@ const menuItems: SidebarItem[] = [
   { path: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard size={20} /> },
   { path: '/kanban', label: 'Kanban', icon: <KanbanSquare size={20} /> },
   { path: '/teams', label: 'Teams', icon: <Users size={20} /> },
+  { path: '/tasks', label: 'Tasks', icon: <ListTodo size={20} /> },
 ];
 
 export default function Sidebar() {

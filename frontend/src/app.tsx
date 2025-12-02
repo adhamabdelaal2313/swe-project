@@ -4,13 +4,14 @@ import {
   Routes,
   Route,
   Navigate,
-  useLocation
+  useLocation,
 } from 'react-router-dom';
 
 // Feature-first architecture: Import from feature folders
 import Dashboard from './dashboard/Dashboard';
 import Kanban from './kanban/Kanban';
 import Teams from './teams/Teams';
+import TaskList from './tasks/TaskList';
 import Portal from './portal/portal';
 import Sidebar from './sidebar/sidebar';
 import SidebarToggle from './sidebar/Components/Toggle/sidebartoggle';
@@ -28,11 +29,12 @@ function PageTitle() {
       '/dashboard': 'Dashboard - TeamFlow',
       '/kanban': 'Kanban Board - TeamFlow',
       '/teams': 'Teams - TeamFlow',
+      '/tasks': 'Tasks - TeamFlow',
     };
-    
+
     document.title = titles[location.pathname] || 'TeamFlow';
   }, [location]);
-  
+
   return null;
 }
 
@@ -78,27 +80,35 @@ function AppRoutes() {
 
       <Route
         path="/dashboard"
-        element={
+        element={(
           <ProtectedLayout>
             <Dashboard />
           </ProtectedLayout>
-        }
+        )}
       />
       <Route
         path="/kanban"
-        element={
+        element={(
           <ProtectedLayout>
             <Kanban />
           </ProtectedLayout>
-        }
+        )}
       />
       <Route
         path="/teams"
-        element={
+        element={(
           <ProtectedLayout>
             <Teams />
           </ProtectedLayout>
-        }
+        )}
+      />
+      <Route
+        path="/tasks"
+        element={(
+          <ProtectedLayout>
+            <TaskList />
+          </ProtectedLayout>
+        )}
       />
 
       <Route path="*" element={<Navigate to="/portal" replace />} />
