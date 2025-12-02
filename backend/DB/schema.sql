@@ -5,6 +5,7 @@ USE teamflow_project;
 DROP TABLE IF EXISTS activities;
 DROP TABLE IF EXISTS tasks;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS teams;
 
 -- Create users table
 CREATE TABLE users (
@@ -36,6 +37,14 @@ CREATE TABLE activities (
   id INT AUTO_INCREMENT PRIMARY KEY,
   action VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE teams (
+    team_id INT PRIMARY KEY AUTO_INCREMENT,
+    team_name VARCHAR(100) NOT NULL,
+    description VARCHAR(255), -- The text below the title (e.g., "Building beautiful...")
+    accent_color VARCHAR(7) DEFAULT '#FFFFFF', -- Stores the hex code for the vertical bar (e.g., Cyan, Purple)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Insert demo users
