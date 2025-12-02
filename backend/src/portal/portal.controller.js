@@ -22,7 +22,7 @@ const login = async (req, res) => {
 
     const user = users[0];
     
-    await logActivity(`User logged in: ${user.email}`);
+    await logActivity(`User logged in: ${user.email}`, user.id, user.name);
 
     res.json({
       id: user.id,
@@ -100,12 +100,25 @@ const getCurrentUser = async (req, res) => {
 // POST: Logout user (log activity)
 const logout = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, userId } = req.body;
+    
+    // Try to get user name if userId is provided
+    let userName = null;
+    if (userId) {
+      try {
+        const [users] = await db.query('SELECT name FROM users WHERE id = ?', [userId]);
+        if (users.length > 0) {
+          userName = users[0].name;
+        }
+      } catch (err) {
+        // Ignore error, just use email
+      }
+    }
     
     if (email) {
-      await logActivity(`User logged out: ${email}`);
+      await logActivity(`User logged out: ${email}`, userId || null, userName);
     } else {
-      await logActivity('User logged out (no email provided)');
+      await logActivity('User logged out (no email provided)', userId || null, userName);
     }
 
     res.json({ message: 'Logged out successfully' });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, ArrowRight, X, Trash2 } from 'lucide-react';
+import { useAuth } from '../portal/Context/AuthContext';
 
 interface Member {
   initials: string;
@@ -15,6 +16,7 @@ interface Team {
 }
 
 export default function Teams() {
+  const { user } = useAuth();
   const [teams, setTeams] = useState<Team[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +67,9 @@ export default function Teams() {
           title: newTeam.title,
           description: newTeam.description,
           color: newTeam.color,
-          members: []
+          members: [],
+          userId: user?.id || null,
+          userName: user?.name || null
         })
       });
 
@@ -92,7 +96,12 @@ export default function Teams() {
 
     try {
       const response = await fetch(`/api/teams/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id || null,
+          userName: user?.name || null
+        })
       });
 
       if (response.ok) {
@@ -116,9 +125,9 @@ export default function Teams() {
       
       {/* HEADER */}
       <header className="flex justify-between items-center mb-12">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-1">Teams</h1>
-          <p className="text-zinc-500 text-sm">Organize your team members into groups</p>
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-1">Teams</h1>
+            <p className="text-zinc-500 text-sm">Organize your team members into groups</p>
         </div>
         
         <button onClick={() => setIsModalOpen(true)} className="bg-[#2E1065] hover:bg-[#3b0764] text-purple-100 px-5 py-2.5 rounded-lg text-sm font-medium border border-purple-900/50 flex items-center gap-2 transition-all shadow-lg shadow-purple-900/20">

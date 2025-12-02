@@ -30,3 +30,18 @@ CREATE TABLE tasks (
   is_completed BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create activities table
+CREATE TABLE activities (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  action VARCHAR(255) NOT NULL,
+  user_id INT,
+  user_name VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- Insert demo users
+INSERT INTO users (name, email, password, role) VALUES
+('Admin User', 'admin@teamflow.com', 'admin123', 'admin'),
+('Adham', 'A.ahmad2313@nu.edu.eg', 'adhoma2026', 'user');

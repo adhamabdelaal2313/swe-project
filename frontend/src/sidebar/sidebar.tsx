@@ -48,16 +48,16 @@ export default function Sidebar() {
       <div className={`fixed left-0 top-0 w-[260px] h-screen bg-zinc-950 border-r border-zinc-800 flex flex-col p-6 shadow-2xl z-[100] transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} overflow-y-auto`}>
         <div className="mb-8 pb-6 border-b border-zinc-800 flex justify-between items-center">
           <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity flex-shrink-0">
-            <div className="w-16 h-16 rounded-xl flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-zinc-800/30 border border-zinc-700/50 overflow-hidden">
               <img 
                 src="/TF-Logo.png" 
                 alt="TeamFlow Logo" 
-                className="max-w-full max-h-full w-auto h-auto object-contain"
-                style={{ width: '100%', height: '100%', padding: '6px' }}
+                className="w-full h-full object-contain p-1.5"
                 onError={(e) => {
                   console.error('Logo failed to load. Check browser console and ensure /TF-Logo.png exists in public folder.');
                   const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
+                  // Don't hide, show a fallback
+                  target.style.opacity = '0.3';
                 }}
                 onLoad={() => console.log('Logo loaded successfully')}
               />
