@@ -1,25 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Zap, Sparkles, Users } from 'lucide-react';
+import { Check, Zap, Sparkles, Circle } from 'lucide-react';
 import StatCard from './components/StatCard';
 import QuickActions from './components/QuickActions';
 import ActivityChart from './components/ActivityChart';
 import CreateTaskModal from './components/CreateTaskModal';
+import { useAuth } from '../portal/Context/AuthContext';
 
 interface Activity {
   id: number;
   action: string;
+  user_id: number | null;
+  user_name: string | null;
+  user_email: string | null;
   created_at: string;
 }
 
 interface DashboardStats {
   totalTasks: number;
+  todo: number;
   inProgress: number;
   completed: number;
-  teamMembers: number;
 }
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats>({ totalTasks: 0, inProgress: 0, completed: 0, teamMembers: 0 });
+  const { user } = useAuth();
+  const [stats, setStats] = useState<DashboardStats>({ totalTasks: 0, todo: 0, inProgress: 0, completed: 0 });
   const [activity, setActivity] = useState<Activity[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -55,7 +60,7 @@ export default function Dashboard() {
           <StatCard title="Total Tasks" value={stats.totalTasks} icon={<Check />} color="cyan" />
           <StatCard title="In Progress" value={stats.inProgress} icon={<Zap />} color="green" />
           <StatCard title="Completed" value={stats.completed} icon={<Sparkles />} color="purple" />
-          <StatCard title="Members" value={stats.teamMembers} icon={<Users />} color="orange" />
+          <StatCard title="To do" value={stats.todo} icon={<Circle />} color="orange" />
         </div>
 
         {/* ROW 2: MAIN CONTENT (Chart vs Actions) */}
@@ -72,9 +77,16 @@ export default function Dashboard() {
                   <p className="text-zinc-500 italic">No recent activity.</p>
                 ) : (
                   activity.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-4 p-3 hover:bg-zinc-800/50 rounded-xl transition-all">
-                      <div className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
-                      <p className="text-zinc-300 text-sm">{item.action}</p>
+                    <div key={idx} className="flex items-start gap-4 p-3 hover:bg-zinc-800/50 rounded-xl transition-all">
+                      <div className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 shadow-[0_0_8px_rgba(99,102,241,0.5)] mt-1.5"></div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-zinc-300 text-sm">{item.action}</p>
+                        {item.user_name && (
+                          <p className="text-zinc-500 text-xs mt-1">
+                            by <span className="text-indigo-400 font-medium">{item.user_name}</span>
+                          </p>
+                        )}
+                      </div>
                       <span className="text-zinc-600 text-xs ml-auto whitespace-nowrap font-mono">Just now</span>
                     </div>
                   ))

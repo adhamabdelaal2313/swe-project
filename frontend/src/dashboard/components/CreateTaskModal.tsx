@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { useAuth } from '../../portal/Context/AuthContext';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -7,6 +8,7 @@ interface CreateTaskModalProps {
 }
 
 export default function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProps) {
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState('MEDIUM');
   const [assignee, setAssignee] = useState('Sarah Chen');
@@ -17,7 +19,13 @@ export default function CreateTaskModal({ isOpen, onClose }: CreateTaskModalProp
       const response = await fetch('/api/dashboard/task', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, priority: priority.toUpperCase(), assignee })
+        body: JSON.stringify({ 
+          title, 
+          priority: priority.toUpperCase(), 
+          assignee,
+          userId: user?.id || null,
+          userName: user?.name || null
+        })
       });
       
       if (!response.ok) {

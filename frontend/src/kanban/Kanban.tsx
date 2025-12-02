@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   X
 } from 'lucide-react';
+import { useAuth } from '../portal/Context/AuthContext';
 
 // --- Types ---
 type Priority = 'HIGH' | 'MEDIUM' | 'LOW';
@@ -152,6 +153,7 @@ const Column = ({
 };
 
 export default function Kanban() {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -205,7 +207,11 @@ export default function Kanban() {
       await fetch(`/api/kanban/tasks/${taskId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ 
+          status: newStatus,
+          userId: user?.id || null,
+          userName: user?.name || null
+        })
       });
     } catch (error) {
       console.warn("Update failed:", error);
@@ -218,7 +224,14 @@ export default function Kanban() {
     
     setTasks(prev => prev.filter(t => t.id !== taskId));
     try {
-      await fetch(`/api/kanban/tasks/${taskId}`, { method: 'DELETE' });
+      await fetch(`/api/kanban/tasks/${taskId}`, { 
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id || null,
+          userName: user?.name || null
+        })
+      });
     } catch (error) {
       console.warn("Delete failed:", error);
     }
@@ -236,7 +249,9 @@ export default function Kanban() {
       team: newTask.team,
       assignee: newTask.assignee,
       tags: [],
-      due_date: newTask.due_date
+      due_date: newTask.due_date,
+      userId: user?.id || null,
+      userName: user?.name || null
     };
 
     try {
@@ -264,11 +279,11 @@ export default function Kanban() {
       
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-        <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Kanban Board</h1>
-          <p className="text-zinc-500 text-sm">
-            {isBackendOffline ? 'Offline Mode' : 'Connected to Database'}
-          </p>
+          <div>
+            <h1 className="text-2xl font-bold text-white mb-1">Kanban Board</h1>
+            <p className="text-zinc-500 text-sm">
+              {isBackendOffline ? 'Offline Mode' : 'Connected to Database'}
+            </p>
         </div>
         
         <button 
