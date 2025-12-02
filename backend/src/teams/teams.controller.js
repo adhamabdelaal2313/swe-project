@@ -7,10 +7,13 @@ const getAllTeams = async (req, res) => {
     const sql = "SELECT * FROM teams ORDER BY created_at DESC";
     const [data] = await db.query(sql);
     
-    // Convert members JSON string back to array
+    // Map database columns to frontend expected format
     const formattedData = data.map(team => ({
-      ...team,
-      members: team.members ? JSON.parse(team.members) : []
+      id: team.team_id,
+      title: team.team_name,
+      description: team.description || '',
+      color: team.accent_color || '#FFFFFF',
+      members: [] // Schema doesn't have members column
     }));
     
     res.json(formattedData);
@@ -24,21 +27,19 @@ const getAllTeams = async (req, res) => {
 // POST: Create a new team
 const createTeam = async (req, res) => {
   try {
-    const sql = "INSERT INTO teams (`title`, `description`, `color`, `members`) VALUES (?)";
-    
-    // Convert members array to JSON string for storage
-    const membersString = JSON.stringify(req.body.members || []);
+    // Map frontend fields to database columns
+    const sql = "INSERT INTO teams (`team_name`, `description`, `accent_color`) VALUES (?, ?, ?)";
     
     const values = [
-      req.body.title,
-      req.body.description,
-      req.body.color,
-      membersString
+      req.body.title || req.body.name, // Accept both 'title' and 'name' from frontend
+      req.body.description || '',
+      req.body.color || req.body.accent_color || '#FFFFFF' // Accept both 'color' and 'accent_color'
     ];
 
-    const [result] = await db.query(sql, [values]);
+    const [result] = await db.query(sql, values);
     const { userId, userName } = req.body;
-    await logActivity(`Team created: ${req.body.title} (#${result.insertId})`, userId || null, userName || null);
+    const teamName = req.body.title || req.body.name;
+    await logActivity(`Team created: ${teamName} (#${result.insertId})`, userId || null, userName || null);
     res.json({ message: "Team created", id: result.insertId });
   } catch (err) {
     console.error("❌ SAVE ERROR:", err.message);
@@ -49,7 +50,7 @@ const createTeam = async (req, res) => {
 // DELETE: Delete a team
 const deleteTeam = async (req, res) => {
   try {
-    const sql = "DELETE FROM teams WHERE id = ?";
+    const sql = "DELETE FROM teams WHERE team_id = ?";
     await db.query(sql, [req.params.id]);
     const { userId, userName } = req.body;
     await logActivity(`Team deleted: ${req.params.id}`, userId || null, userName || null);

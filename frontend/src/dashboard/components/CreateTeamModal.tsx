@@ -32,12 +32,14 @@ export function CreateTeamModal({ isOpen, onClose, onTeamCreated }: CreateTeamMo
     }
 
     try {
-      // FIX 2: Correct Port to 3000
-      const response = await fetch('http://localhost:3000/api/dashboard/team', {
+      const response = await fetch('/api/teams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // Use the trimmed name
-        body: JSON.stringify({ name: trimmedTeamName, description }),
+        body: JSON.stringify({ 
+          title: trimmedTeamName, // Teams controller expects 'title' or 'name'
+          description: description || '',
+          color: '#FFFFFF' // Default color
+        }),
       });
 
       // We check for response.ok (200-299 status code)

@@ -123,9 +123,8 @@ export default function Portal() {
               Demo Credentials:
             </p>
             <div className="text-zinc-500 text-xs space-y-1">
-              <div>admin@teamflow.com / admin123</div>
-              <div>user@teamflow.com / user123</div>
-              <div>demo@teamflow.com / demo123</div>
+              <div>admin@teamflow.com / admin123</div>  
+              <div>A.ahmad2313@nu.edu.eg / adhoma2026</div>
             </div>
           </div>
         </div>

@@ -17,7 +17,4 @@ router.get('/activity', dashboardController.getRecentActivity);
 // URL: POST /api/dashboard/task
 router.post('/task', dashboardController.createQuickTask);
 
-// URL: POST /api/dashboard/team
-router.post('/team', dashboardController.createTeam);
-
 module.exports = router;
