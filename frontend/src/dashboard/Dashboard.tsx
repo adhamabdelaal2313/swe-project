@@ -1,39 +1,27 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, Zap, Sparkles, Users } from 'lucide-react';
 import StatCard from './components/StatCard';
 import QuickActions from './components/QuickActions';
 import ActivityChart from './components/ActivityChart';
 import CreateTaskModal from './components/CreateTaskModal';
-import { CreateTeamModal } from './components/CreateTeamModal'; 
+
+interface Activity {
+  id: number;
+  action: string;
+  created_at: string;
+}
+
+interface DashboardStats {
+  totalTasks: number;
+  inProgress: number;
+  completed: number;
+  teamMembers: number;
+}
 
 export default function Dashboard() {
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
-  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
-
-  const [stats, setStats] = useState({
-    pendingTasks: 0,
-    completedTasks: 0,
-    teamVelocity: 0,
-    activeMembers: 0
-  });
-  const [activities, setActivities] = useState([]);
-  
-  const fetchDashboardData = async () => {
-    try {
-      const statsRes = await fetch('http://localhost:5000/api/dashboard/stats');
-      const activityRes = await fetch('http://localhost:5000/api/dashboard/activity');
-      
-      const statsData = await statsRes.json();
-      const activityData = await activityRes.json();
-
-      setStats(statsData);
-      setActivities(activityData);
-      
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      
-    }
-  };
+  const [stats, setStats] = useState<DashboardStats>({ totalTasks: 0, inProgress: 0, completed: 0, teamMembers: 0 });
+  const [activity, setActivity] = useState<Activity[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
@@ -50,10 +38,14 @@ export default function Dashboard() {
         <p className="text-zinc-400">Welcome back! Here's what's happening with your team.</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-           
-          <ActivityChart {...({ data: activities } as any)} />
+      <div className="flex flex-col gap-8">
+        
+        {/* ROW 1: STATS (4 Cards) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <StatCard title="Total Tasks" value={stats.totalTasks} icon={<Check />} color="cyan" />
+          <StatCard title="In Progress" value={stats.inProgress} icon={<Zap />} color="green" />
+          <StatCard title="Completed" value={stats.completed} icon={<Sparkles />} color="purple" />
+          <StatCard title="Members" value={stats.teamMembers} icon={<Users />} color="orange" />
         </div>
 
         <div className="space-y-8">
