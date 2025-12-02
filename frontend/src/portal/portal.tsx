@@ -35,16 +35,17 @@ export default function Portal() {
         <div className="text-center mb-10 relative z-10">
           <div className="flex flex-col items-center mb-5">
             <div className="flex items-center gap-3 mb-5">
-              <div className="w-20 h-20 rounded-xl flex items-center justify-center">
+              <div className="w-20 h-20 rounded-xl flex items-center justify-center bg-zinc-800/30 border border-zinc-700/50 overflow-hidden">
                 <img 
                   src="/TF-Logo.png" 
                   alt="TeamFlow Logo" 
-                  className="max-w-full max-h-full w-auto h-auto object-contain"
-                  style={{ width: '100%', height: '100%', padding: '8px' }}
+                  className="w-full h-full object-contain p-2"
                   onError={(e) => {
                     console.error('❌ Logo failed to load from /TF-Logo.png');
+                    console.error('File should be at: public/TF-Logo.png');
                     const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
+                    // Don't hide, show a fallback
+                    target.style.opacity = '0.3';
                   }}
                   onLoad={() => {
                     console.log('✅ Logo loaded successfully from /TF-Logo.png');

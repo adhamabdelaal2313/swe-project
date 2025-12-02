@@ -57,13 +57,13 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-[#09090b] text-white flex overflow-hidden">
       <Sidebar />
 
-      {/* Sidebar toggle button - visible when sidebar is closed */}
-      <div className={`fixed top-4 left-4 z-[120] transition-opacity duration-300 ${isOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+      {/* Sidebar toggle button - always visible, moves with sidebar on desktop */}
+      <div className={`fixed top-4 z-[120] transition-all duration-300 ${isOpen ? 'left-4 md:left-[268px]' : 'left-4'}`}>
         <SidebarToggle />
       </div>
 
       {/* Main content with proper spacing to avoid overlap with toggle button */}
-      <main className={`flex-1 transition-all duration-300 ${isOpen ? 'md:ml-[260px]' : 'md:ml-0'} min-h-screen overflow-x-hidden overflow-y-auto ${isOpen ? 'px-4 md:px-8' : 'pl-20 md:pl-24 pr-4 md:pr-8'} py-6`}>
+      <main className={`flex-1 transition-all duration-300 ${isOpen ? 'md:ml-[260px]' : 'md:ml-0'} min-h-screen overflow-x-hidden overflow-y-auto ${isOpen ? 'px-4 md:pl-20 md:pr-8' : 'pl-20 md:pl-24 pr-4 md:pr-8'} pt-20 md:pt-6 pb-6`}>
         {children}
       </main>
     </div>
