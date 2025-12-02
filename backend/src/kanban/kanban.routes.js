@@ -1,17 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const {
-  getKanbanTasks,
-  createKanbanTask,
-  updateKanbanTaskStatus,
-  deleteKanbanTask
-} = require('./kanban.controller');
+const controller = require('../controllers/kanban.controller');
 
-// Route definitions - map URLs to controller functions
-router.get('/tasks', getKanbanTasks);
-router.post('/tasks', createKanbanTask);
-router.put('/tasks/:id', updateKanbanTaskStatus);
-router.delete('/tasks/:id', deleteKanbanTask);
+// Task Routes
+router.get('/tasks', controller.getTasks);
+router.post('/tasks', controller.createTask);
+router.put('/tasks/:id', controller.updateTaskStatus);
+router.delete('/tasks/:id', controller.deleteTask);
+
+// Dropdown Helper Routes
+router.get('/users', controller.getUsers); // Populates Assignee
+router.get('/teams', controller.getTeams); // Populates Team
 
 module.exports = router;
-
