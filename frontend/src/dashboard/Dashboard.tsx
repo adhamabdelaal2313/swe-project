@@ -1,98 +1,116 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, Zap, Sparkles, Users } from 'lucide-react';
 import StatCard from './components/StatCard';
 import QuickActions from './components/QuickActions';
 import ActivityChart from './components/ActivityChart';
 import CreateTaskModal from './components/CreateTaskModal';
-
-interface Activity {
-  id: number;
-  action: string;
-  created_at: string;
-}
-
-interface DashboardStats {
-  totalTasks: number;
-  inProgress: number;
-  completed: number;
-  teamMembers: number;
-}
+import { CreateTeamModal } from './components/CreateTeamModal'; 
 
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats>({ totalTasks: 0, inProgress: 0, completed: 0, teamMembers: 0 });
-  const [activity, setActivity] = useState<Activity[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+
+  const [stats, setStats] = useState({
+    pendingTasks: 0,
+    completedTasks: 0,
+    teamVelocity: 0,
+    activeMembers: 0
+  });
+  const [activities, setActivities] = useState([]);
+  
+  const fetchDashboardData = async () => {
+    try {
+      const statsRes = await fetch('http://localhost:5000/api/dashboard/stats');
+      const activityRes = await fetch('http://localhost:5000/api/dashboard/activity');
+      
+      const statsData = await statsRes.json();
+      const activityData = await activityRes.json();
+
+      setStats(statsData);
+      setActivities(activityData);
+      
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      
+    }
+  };
 
   useEffect(() => {
-    const fetchData = () => {
-      fetch('/api/dashboard/stats')
-        .then(res => res.json())
-        .then(data => setStats(data))
-        .catch(console.error);
-        
-      fetch('/api/dashboard/activity')
-        .then(res => res.json())
-        .then(data => setActivity(data))
-        .catch(console.error);
-    };
-    fetchData();
-    setInterval(fetchData, 2000);
+    fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="p-8 bg-black min-h-screen text-white font-sans">
+    <div className="p-8 max-w-7xl mx-auto space-y-8">
       
-      {/* HEADER */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-        <p className="text-zinc-400">Welcome back! Here's what's happening with your team.</p>
-      </div>
 
-      <div className="flex flex-col gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         
-        {/* ROW 1: STATS (4 Cards) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Total Tasks" value={stats.totalTasks} icon={<Check />} color="cyan" />
-          <StatCard title="In Progress" value={stats.inProgress} icon={<Zap />} color="green" />
-          <StatCard title="Completed" value={stats.completed} icon={<Sparkles />} color="purple" />
-          <StatCard title="Members" value={stats.teamMembers} icon={<Users />} color="orange" />
+        <StatCard 
+          title="Pending Tasks" 
+          value={stats.pendingTasks} 
+          icon={<Zap size={24} />} 
+          color="purple" 
+        />
+        <StatCard 
+          title="Completed" 
+          value={stats.completedTasks} 
+          icon={<Check size={24} />} 
+          color="green" 
+        />
+        <StatCard 
+          title="Team Velocity" 
+          value={`${stats.teamVelocity}/wk`} 
+          icon={<Sparkles size={24} />} 
+          color="orange" 
+        />
+        <StatCard 
+          title="Active Members" 
+          value={stats.activeMembers} 
+          icon={<Users size={24} />} 
+          color="cyan" 
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+           
+          <ActivityChart {...({ data: activities } as any)} />
         </div>
 
-        {/* ROW 2: MAIN CONTENT (Chart vs Actions) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* LEFT COLUMN (Chart & Activity) - Takes 8/12 width */}
-          <div className="lg:col-span-8 flex flex-col gap-8">
-            <ActivityChart />
-            
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
-              <h2 className="text-lg font-bold text-white mb-4">Recent Activity</h2>
-              <div className="flex flex-col gap-3">
-                {activity.length === 0 ? (
-                  <p className="text-zinc-500 italic">No recent activity.</p>
-                ) : (
-                  activity.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-4 p-3 hover:bg-zinc-800/50 rounded-xl transition-all">
-                      <div className="w-2 h-2 rounded-full bg-indigo-500 shrink-0 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></div>
-                      <p className="text-zinc-300 text-sm">{item.action}</p>
-                      <span className="text-zinc-600 text-xs ml-auto whitespace-nowrap font-mono">Just now</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-          
-          {/* RIGHT COLUMN (Quick Actions) - Takes 4/12 width */}
-          <div className="lg:col-span-4 sticky top-8">
-            <QuickActions onNewTaskClick={() => setIsModalOpen(true)} />
-          </div>
-
+        <div className="space-y-8">
+          <QuickActions 
+            onNewTaskClick={() => setIsTaskModalOpen(true)} 
+            onNewTeamClick={() => setIsTeamModalOpen(true)}
+          />
         </div>
       </div>
 
-      {/* Modal Popup */}
-      <CreateTaskModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      {isTaskModalOpen && (
+        <CreateTaskModal 
+          // 💡 FIX: ADD THESE TWO ESSENTIAL PROPS BACK
+          isOpen={isTaskModalOpen}
+          onClose={() => setIsTaskModalOpen(false)}
+          // The onTaskCreated prop is correctly defined below:
+          onTaskCreated={() => {
+            setIsTaskModalOpen(false);
+            fetchDashboardData(); // Refreshes after Task creation
+          }}
+        />
+      )}
+      {isTeamModalOpen && (
+        <CreateTeamModal 
+          isOpen={isTeamModalOpen} 
+          onClose={() => setIsTeamModalOpen(false)} 
+          // 💡 NEW PROP: Wire up the refresh logic for Team creation
+          onTeamCreated={() => {
+            setIsTeamModalOpen(false);
+            fetchDashboardData(); 
+          }}
+        />
+      )}
     </div>
   );
 }
+  
