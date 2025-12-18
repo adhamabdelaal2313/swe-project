@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, ArrowRight, X, Trash2, UserPlus, Shield, Users as UsersIcon } from 'lucide-react';
+import { Plus, ArrowRight, X, Trash2, UserPlus, Users as UsersIcon } from 'lucide-react';
 import { useAuth } from '../portal/Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 

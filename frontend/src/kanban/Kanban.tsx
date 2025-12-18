@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   Plus,  
   ChevronRight, 
@@ -7,7 +7,7 @@ import {
   Edit2
 } from 'lucide-react';
 import { useAuth } from '../portal/Context/AuthContext';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import TaskModal from '../tasks/TaskModal';
 
 type Priority = 'HIGH' | 'MEDIUM' | 'LOW';
@@ -194,7 +194,6 @@ const TaskCard = ({
 
 const Column = ({ 
   title, 
-  status: _status, 
   tasks, 
   colorClass, 
   count,
@@ -261,8 +260,7 @@ const Column = ({
 };
 
 export default function Kanban() {
-  const { user, fetchWithAuth } = useAuth();
-  const navigate = useNavigate();
+  const { fetchWithAuth } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const teamFilter = searchParams.get('teamId');
   
@@ -272,23 +270,12 @@ export default function Kanban() {
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isBackendOffline, setIsBackendOffline] = useState(false);
-
-  // Form State for new tasks
-  const [newTask, setNewTask] = useState({ 
-    title: '', 
-    team_id: teamFilter ? Number(teamFilter) : null as number | null, 
-    priority: 'MEDIUM' as Priority,
-    assignee_id: null as number | null,
-    due_date: ''
-  });
   
   const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState('');
 
   const handleClearFilter = () => {
     setSearchParams({});
-    // After clearing search params, the teamFilter will be null, 
-    // and useEffect will trigger fetchTasks() which will get all permitted tasks.
   };
 
   const handleInPlaceUpdate = async (id: number, newTitle: string) => {
@@ -322,29 +309,25 @@ export default function Kanban() {
   };
 
   // Fetch tasks from API
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const url = teamFilter ? `/api/kanban/tasks?team_id=${teamFilter}` : '/api/kanban/tasks';
       const response = await fetchWithAuth(url);
       if (!response.ok) throw new Error('Failed');
       const data = await response.json();
-      
-      // Always display all tasks returned by the backend
-      // The backend already handles security/filtering for the specific user
       setTasks(data);
-      
       setIsBackendOffline(false);
     } catch (error) {
-      console.log("Offline mode active");
+      console.log("Offline mode active", error);
       setIsBackendOffline(true);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [fetchWithAuth, teamFilter]);
 
   // Fetch teams for the filter display
   useEffect(() => {
-    const fetchTeams = async () => {
+    const fetchTeamsList = async () => {
       try {
         const response = await fetchWithAuth('/api/teams');
         if (response.ok) {
@@ -355,23 +338,14 @@ export default function Kanban() {
         console.error("Failed to fetch teams:", err);
       }
     };
-    fetchTeams();
+    fetchTeamsList();
   }, [fetchWithAuth]);
 
   useEffect(() => {
     fetchTasks();
-  }, [fetchWithAuth, teamFilter]);
+  }, [fetchTasks]);
 
   const activeTeamName = teamFilter ? teams.find(t => String(t.id) === String(teamFilter))?.title : null;
-
-  // Sync newTask team_id when filter changes
-  useEffect(() => {
-    if (teamFilter) {
-      setNewTask(prev => ({ ...prev, team_id: Number(teamFilter) }));
-    } else {
-      setNewTask(prev => ({ ...prev, team_id: null }));
-    }
-  }, [teamFilter]);
 
   const handleEditTask = (task: Task) => {
     setTaskToEdit(task);

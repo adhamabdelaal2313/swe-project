@@ -30,7 +30,7 @@ const TaskList = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'>('ALL');
-  const { user, fetchWithAuth } = useAuth();
+  const { fetchWithAuth } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const teamFilter = searchParams.get('teamId');
 

@@ -3,7 +3,6 @@ import Portal from '../portal/portal';
 import { AuthProvider } from '../portal/Context/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
 import { describe, it, expect, vi } from 'vitest';
-import React from 'react';
 
 // Mock fetch
 global.fetch = vi.fn();
