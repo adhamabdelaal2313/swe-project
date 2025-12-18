@@ -6,10 +6,11 @@ interface Task {
   id: number;
   title: string;
   description: string;
-  status: string; // 'TODO', 'IN_PROGRESS', 'DONE'
-  priority: string; // 'LOW', 'MEDIUM', 'HIGH'
-  team: string;
-  assignee: string;
+  status: string; 
+  priority: string;
+  team_id: number | null;
+  assignee_id: number | null;
+  tags: string[];
   due_date: string;
 }
 
@@ -35,8 +36,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState('TODO');
   const [priority, setPriority] = useState('MEDIUM');
-  const [team, setTeam] = useState('');
-  const [assignee, setAssignee] = useState('');
+  const [teamId, setTeamId] = useState<number | null>(null);
+  const [assigneeId, setAssigneeId] = useState<number | null>(null);
   const [dueDate, setDueDate] = useState('');
 
   const [teams, setTeams] = useState<TeamOption[]>([]);
@@ -45,9 +46,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   const isEditing = taskToEdit !== null;
-  const { user } = useAuth();
+  const { fetchWithAuth, user } = useAuth();
 
-  // Prefill fields when editing / opening
   useEffect(() => {
     if (!isOpen) return;
 
@@ -56,28 +56,27 @@ const TaskModal: React.FC<TaskModalProps> = ({
       setDescription(taskToEdit.description || '');
       setStatus(taskToEdit.status || 'TODO');
       setPriority(taskToEdit.priority || 'MEDIUM');
-      setTeam(taskToEdit.team || '');
-      setAssignee(taskToEdit.assignee || '');
-      setDueDate(taskToEdit.due_date ? taskToEdit.due_date.substring(0, 10) : '');
+      setTeamId(taskToEdit.team_id);
+      setAssigneeId(taskToEdit.assignee_id);
+      setDueDate(taskToEdit.due_date ? String(taskToEdit.due_date).substring(0, 10) : '');
     } else {
       setTitle('');
       setDescription('');
       setStatus('TODO');
       setPriority('MEDIUM');
-      setTeam('');
-      setAssignee('');
+      setTeamId(null);
+      setAssigneeId(null);
       setDueDate('');
     }
     setError(null);
   }, [isOpen, taskToEdit]);
 
-  // Load teams for dropdown so tasks always stay in sync with Teams section
   useEffect(() => {
     if (!isOpen) return;
 
     const fetchTeams = async () => {
       try {
-        const res = await fetch('/api/teams');
+        const res = await fetchWithAuth('/api/teams');
         if (!res.ok) return;
         const data = await res.json();
         setTeams(
@@ -86,13 +85,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
             title: t.title,
           }))
         );
-      } catch {
-        // Silent fail: we can still allow free-text team if API fails
+      } catch (err) {
+        console.error('Failed to fetch teams', err);
       }
     };
 
     fetchTeams();
-  }, [isOpen]);
+  }, [isOpen, fetchWithAuth]);
 
   if (!isOpen) return null;
 
@@ -116,16 +115,14 @@ const TaskModal: React.FC<TaskModalProps> = ({
         description,
         status,
         priority,
-        team,
-        assignee,
+        team_id: teamId,
+        assignee_id: assigneeId,
         due_date: dueDate,
-        userId: user?.id || null,
-        userName: user?.name || null,
+        tags: taskToEdit?.tags || []
       };
 
-      const response = await fetch(url, {
+      const response = await fetchWithAuth(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyPayload),
       });
 
@@ -164,11 +161,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
         </h3>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Title */}
           <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">
-              Title
-            </label>
+            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Title</label>
             <input
               type="text"
               value={title}
@@ -179,11 +173,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
             />
           </div>
 
-          {/* Description */}
           <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">
-              Description
-            </label>
+            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -194,12 +185,9 @@ const TaskModal: React.FC<TaskModalProps> = ({
             />
           </div>
 
-          {/* Status & Priority */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">
-                Status
-              </label>
+              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Status</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
@@ -212,9 +200,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
               </select>
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">
-                Priority
-              </label>
+              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Priority</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
@@ -228,46 +214,40 @@ const TaskModal: React.FC<TaskModalProps> = ({
             </div>
           </div>
 
-          {/* Team & Assignee */}
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">
-                Team
-              </label>
+              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Team</label>
               <select
-                value={team}
-                onChange={(e) => setTeam(e.target.value)}
+                value={teamId || ''}
+                onChange={(e) => setTeamId(e.target.value ? Number(e.target.value) : null)}
                 disabled={loading}
                 className="w-full bg-[#09090b] border border-zinc-700 rounded-lg p-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 appearance-none"
               >
                 <option value="">Select team</option>
                 {teams.map((t) => (
-                  <option key={t.id} value={t.title}>
+                  <option key={t.id} value={t.id}>
                     {t.title}
                   </option>
                 ))}
               </select>
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">
-                Assignee
-              </label>
-              <input
-                type="text"
-                value={assignee}
-                onChange={(e) => setAssignee(e.target.value)}
-                placeholder="Name"
+              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Assignee</label>
+              <select
+                value={assigneeId || ''}
+                onChange={(e) => setAssigneeId(e.target.value ? Number(e.target.value) : null)}
                 disabled={loading}
-                className="w-full bg-[#09090b] border border-zinc-700 rounded-lg p-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50"
-              />
+                className="w-full bg-[#09090b] border border-zinc-700 rounded-lg p-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 appearance-none"
+              >
+                <option value="">Unassigned</option>
+                {/* Normally we'd fetch users here too */}
+                {user && <option value={user.id}>{user.name} (You)</option>}
+              </select>
             </div>
           </div>
 
-          {/* Due Date */}
           <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">
-              Due Date
-            </label>
+            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Due Date</label>
             <input
               type="date"
               value={dueDate}
@@ -284,14 +264,14 @@ const TaskModal: React.FC<TaskModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2.5 rounded-lg text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2.5 rounded-lg text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-100 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 transition-colors disabled:opacity-50"
             >
               {loading ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Task'}
             </button>

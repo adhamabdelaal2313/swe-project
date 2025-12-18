@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Users, Check, AlertCircle } from 'lucide-react';
+import { useAuth } from '../../portal/Context/AuthContext';
 
 interface CreateTeamModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface CreateTeamModalProps {
 
 // 💡 FIX 1: Destructure onTeamCreated from props
 export function CreateTeamModal({ isOpen, onClose, onTeamCreated }: CreateTeamModalProps) {
+  const { fetchWithAuth } = useAuth();
   const [teamName, setTeamName] = useState('');
   const [description, setDescription] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,9 +34,8 @@ export function CreateTeamModal({ isOpen, onClose, onTeamCreated }: CreateTeamMo
     }
 
     try {
-      const response = await fetch('/api/teams', {
+      const response = await fetchWithAuth('/api/teams', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           title: trimmedTeamName, // Teams controller expects 'title' or 'name'
           description: description || '',

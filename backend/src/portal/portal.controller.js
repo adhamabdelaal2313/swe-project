@@ -1,5 +1,30 @@
 const db = require('../config/db.config');
 const logActivity = require('../utils/activityLogger');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const Joi = require('joi');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key';
+
+// Password complexity regex: 1 upper, 1 lower, 1 digit, 1 special, min 8 chars
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+const registerSchema = Joi.object({
+  name: Joi.string().min(2).max(50).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().pattern(passwordRegex).required().messages({
+    'string.pattern.base': 'Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, a number, and a special character.'
+  })
+});
+
+// Helper: Generate JWT
+const generateToken = (user) => {
+  return jwt.sign(
+    { id: user.id, email: user.email, role: user.role },
+    JWT_SECRET,
+    { expiresIn: '24h' }
+  );
+};
 
 // POST: Login user
 const login = async (req, res) => {
@@ -12,8 +37,8 @@ const login = async (req, res) => {
 
     // Query user from database
     const [users] = await db.query(
-      'SELECT id, name, email, role FROM users WHERE email = ? AND password = ?',
-      [email, password]
+      'SELECT id, name, email, password, role FROM users WHERE email = ?',
+      [email]
     );
 
     if (users.length === 0) {
@@ -22,13 +47,24 @@ const login = async (req, res) => {
 
     const user = users[0];
     
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    const token = generateToken(user);
+
     await logActivity(`User logged in: ${user.email}`, user.id, user.name);
 
     res.json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      role: user.role || 'user'
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role || 'user'
+      }
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -39,11 +75,12 @@ const login = async (req, res) => {
 // POST: Register new user
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Name, email, and password are required' });
+    const { error, value } = registerSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
     }
+
+    const { name, email, password } = value;
 
     // Check if user already exists
     const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
@@ -52,19 +89,30 @@ const register = async (req, res) => {
       return res.status(409).json({ message: 'User with this email already exists' });
     }
 
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     // Create new user
     const [result] = await db.query(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-      [name, email, password, 'user']
+      [name, email, hashedPassword, 'user']
     );
 
-    await logActivity(`New user registered: ${email}`);
-
-    res.status(201).json({
+    const newUser = {
       id: result.insertId,
       name,
       email,
       role: 'user'
+    };
+
+    const token = generateToken(newUser);
+
+    await logActivity(`New user registered: ${email}`);
+
+    res.status(201).json({
+      token,
+      user: newUser
     });
   } catch (error) {
     console.error('Registration error:', error);
@@ -75,7 +123,8 @@ const register = async (req, res) => {
 // GET: Get current user (for session validation)
 const getCurrentUser = async (req, res) => {
   try {
-    const userId = req.query.userId || req.headers['user-id'];
+    // This will be used after auth middleware, so user will be in req.user
+    const userId = req.user ? req.user.id : (req.query.userId || req.headers['user-id']);
     
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required' });
@@ -102,7 +151,6 @@ const logout = async (req, res) => {
   try {
     const { email, userId } = req.body;
     
-    // Try to get user name if userId is provided
     let userName = null;
     if (userId) {
       try {
@@ -110,16 +158,10 @@ const logout = async (req, res) => {
         if (users.length > 0) {
           userName = users[0].name;
         }
-      } catch (err) {
-        // Ignore error, just use email
-      }
+      } catch (err) {}
     }
     
-    if (email) {
-      await logActivity(`User logged out: ${email}`, userId || null, userName);
-    } else {
-      await logActivity('User logged out (no email provided)', userId || null, userName);
-    }
+    await logActivity(`User logged out: ${email || 'Unknown'}`, userId || null, userName);
 
     res.json({ message: 'Logged out successfully' });
   } catch (error) {
@@ -134,4 +176,3 @@ module.exports = {
   getCurrentUser,
   logout
 };
-

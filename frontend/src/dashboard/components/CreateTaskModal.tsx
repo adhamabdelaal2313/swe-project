@@ -9,7 +9,7 @@ interface CreateTaskModalProps {
 }
 
 export default function CreateTaskModal({ isOpen, onClose, onTaskCreated }: CreateTaskModalProps) {
-  const { user } = useAuth();
+  const { user, fetchWithAuth } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
@@ -27,16 +27,12 @@ export default function CreateTaskModal({ isOpen, onClose, onTaskCreated }: Crea
     }
 
     try {
-      const response = await fetch('/api/dashboard/task', {
+      const response = await fetchWithAuth('/api/dashboard/task', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           title, 
           description,
-          priority: 'MEDIUM',
-          assignee: 'Unassigned',
-          userId: user?.id || null,
-          userName: user?.name || null
+          priority: 'MEDIUM'
         })
       });
 

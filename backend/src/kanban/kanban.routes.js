@@ -1,11 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const controller = require('./kanban.controller');
+const {
+  getAllTasks,
+  createTask,
+  updateTask,
+  deleteTask
+} = require('../tasks/tasks.controller');
+const { auth } = require('../middleware/auth');
 
-// Kanban task routes (mounted under /api/kanban)
-router.get('/tasks', controller.getKanbanTasks);
-router.post('/tasks', controller.createKanbanTask);
-router.put('/tasks/:id', controller.updateKanbanTaskStatus);
-router.delete('/tasks/:id', controller.deleteKanbanTask);
+// All kanban routes require authentication
+router.use(auth);
+
+// Map /api/kanban/tasks to the tasks controller
+router.get('/tasks', getAllTasks);
+router.post('/tasks', createTask);
+router.put('/tasks/:id', updateTask);
+router.delete('/tasks/:id', deleteTask);
 
 module.exports = router;

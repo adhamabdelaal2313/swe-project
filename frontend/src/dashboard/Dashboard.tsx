@@ -5,6 +5,7 @@ import QuickActions from './components/QuickActions';
 import ActivityChart from './components/ActivityChart';
 import CreateTaskModal from './components/CreateTaskModal';
 import { CreateTeamModal } from './components/CreateTeamModal';
+import { useAuth } from '../portal/Context/AuthContext';
 
 interface Activity {
   id: number;
@@ -20,21 +21,23 @@ interface DashboardStats {
   todo: number;
   inProgress: number;
   completed: number;
+  chartData?: Array<{ name: string; tasks: number }>;
 }
 
 export default function Dashboard() {
+  const { fetchWithAuth } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({ totalTasks: 0, todo: 0, inProgress: 0, completed: 0 });
   const [activity, setActivity] = useState<Activity[]>([]);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
   const fetchDashboardData = () => {
-    fetch('/api/dashboard/stats')
+    fetchWithAuth('/api/dashboard/stats')
       .then(res => res.json())
       .then(data => setStats(data))
       .catch(console.error);
       
-    fetch('/api/dashboard/activity')
+    fetchWithAuth('/api/dashboard/activity')
       .then(res => res.json())
       .then(data => setActivity(data))
       .catch(console.error);
@@ -42,9 +45,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-    const interval = setInterval(fetchDashboardData, 5000);
+    const interval = setInterval(fetchDashboardData, 10000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchWithAuth]);
 
   return (
     <div className="p-8 bg-black min-h-screen text-white font-sans">
@@ -70,7 +73,7 @@ export default function Dashboard() {
           
           {/* LEFT COLUMN (Chart & Activity) - Takes 8/12 width */}
           <div className="lg:col-span-8 flex flex-col gap-8">
-            <ActivityChart />
+            <ActivityChart data={stats.chartData} />
             
             <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
               <h2 className="text-lg font-bold text-white mb-4">Recent Activity</h2>

@@ -9,8 +9,11 @@ interface Task {
   description: string;
   status: string;
   priority: string;
-  team: string;
-  assignee: string;
+  team_id: number | null;
+  team_name?: string;
+  assignee_id: number | null;
+  assignee_name?: string;
+  tags: string[];
   due_date: string;
   created_at: string;
 }
@@ -25,7 +28,7 @@ const TaskList = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'>('ALL');
-  const { user } = useAuth();
+  const { user, fetchWithAuth } = useAuth();
 
   // Load all tasks from backend; search & status filtering are done client-side
   const fetchTasks = useCallback(
@@ -34,7 +37,7 @@ const TaskList = () => {
       setError(null);
 
       try {
-        const response = await fetch('/api/tasks', signal ? { signal } : undefined);
+        const response = await fetchWithAuth('/api/tasks', signal ? { signal } : undefined);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -49,7 +52,7 @@ const TaskList = () => {
         setLoading(false);
       }
     },
-    []
+    [fetchWithAuth]
   );
 
   useEffect(() => {
@@ -69,13 +72,8 @@ const TaskList = () => {
   const handleDelete = async (id: number) => {
     if (!window.confirm('Are you sure you want to delete this task?')) return;
     try {
-      await fetch(`/api/tasks/${id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.id || null,
-          userName: user?.name || null,
-        }),
+      await fetchWithAuth(`/api/tasks/${id}`, {
+        method: 'DELETE'
       });
       fetchTasks();
     } catch (e: any) {
@@ -124,8 +122,8 @@ const TaskList = () => {
       const haystack = [
         t.title,
         t.description,
-        t.team,
-        t.assignee,
+        t.team_name || 'General',
+        t.assignee_name || 'Unassigned',
         t.priority,
         t.status,
       ]
@@ -267,12 +265,12 @@ const TaskList = () => {
                   {task.title}
                 </p>
                 <p className="text-xs text-zinc-500 mt-0.5">
-                  {task.assignee || 'Unassigned'}
+                  {task.assignee_name || 'Unassigned'}
                 </p>
               </div>
 
               <div className="flex-1 text-sm text-zinc-300">
-                {task.team || 'General'}
+                {task.team_name || 'General'}
               </div>
 
               <div className="flex-1 text-sm font-semibold">

@@ -3,11 +3,14 @@ import {
   Plus,  
   ChevronRight, 
   ChevronLeft,
-  X
+  X,
+  Edit2
 } from 'lucide-react';
 import { useAuth } from '../portal/Context/AuthContext';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import TaskModal from '../tasks/TaskModal';
 
-// --- Types ---
+// ... rest of the types ...
 type Priority = 'HIGH' | 'MEDIUM' | 'LOW';
 type Status = 'TODO' | 'IN_PROGRESS' | 'DONE';
 
@@ -17,8 +20,10 @@ interface Task {
   description: string;
   status: Status;
   priority: Priority;
-  team: string;
-  assignee: string;
+  team_id: number | null;
+  team_name?: string;
+  assignee_id: number | null;
+  assignee_name?: string;
   tags: string[];
   due_date: string;
 }
@@ -41,17 +46,27 @@ const PriorityBadge = ({ priority }: { priority: Priority }) => {
 const TaskCard = ({ 
   task, 
   onMove,
-  onDelete
+  onDelete,
+  onEdit
 }: { 
   task: Task; 
   onMove: (id: number, direction: 'left' | 'right') => void;
   onDelete: (id: number) => void;
+  onEdit: (task: Task) => void;
 }) => {
   return (
     <div className="group relative bg-[#141414] border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors duration-200">
       
       {/* Hover Controls for Moving */}
       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+        <button 
+          onClick={() => onEdit(task)}
+          className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white"
+          title="Edit Task"
+        >
+          <Edit2 size={14} />
+        </button>
+        <div className="w-px h-3 bg-zinc-800 mx-1 self-center"></div>
         {task.status !== 'TODO' && (
           <button 
             onClick={() => onMove(task.id, 'left')}
@@ -86,7 +101,7 @@ const TaskCard = ({
       </div>
 
       <div className="flex justify-between items-start mb-2">
-        <span className="text-[10px] text-zinc-500 uppercase font-medium tracking-wider">{task.team}</span>
+        <span className="text-[10px] text-zinc-500 uppercase font-medium tracking-wider">{task.team_name || 'General'}</span>
       </div>
 
       <h3 className="text-zinc-100 font-semibold text-sm mb-1">{task.title}</h3>
@@ -101,9 +116,9 @@ const TaskCard = ({
       )}
 
       <div className="pt-3 border-t border-zinc-800/50 flex justify-between items-center">
-        <span className="text-zinc-400 text-xs font-medium">{task.assignee}</span>
+        <span className="text-zinc-400 text-xs font-medium">{task.assignee_name || 'Unassigned'}</span>
         <div className="w-6 h-6 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] text-zinc-400">
-          {task.assignee.charAt(0)}
+          {(task.assignee_name || 'U').charAt(0)}
         </div>
       </div>
     </div>
@@ -117,7 +132,8 @@ const Column = ({
   colorClass, 
   count,
   onMoveTask,
-  onDeleteTask
+  onDeleteTask,
+  onEditTask
 }: { 
   title: string; 
   status: Status;
@@ -126,6 +142,7 @@ const Column = ({
   count: number;
   onMoveTask: (id: number, dir: 'left' | 'right') => void;
   onDeleteTask: (id: number) => void;
+  onEditTask: (task: Task) => void;
 }) => {
   return (
     <div className="flex flex-col gap-4">
@@ -140,7 +157,7 @@ const Column = ({
       {/* Task List */}
       <div className="flex flex-col gap-3 h-full">
         {tasks.map(task => (
-          <TaskCard key={task.id} task={task} onMove={onMoveTask} onDelete={onDeleteTask} />
+          <TaskCard key={task.id} task={task} onMove={onMoveTask} onDelete={onDeleteTask} onEdit={onEditTask} />
         ))}
         {tasks.length === 0 && (
           <div className="h-32 rounded-xl border border-dashed border-zinc-800 flex items-center justify-center text-zinc-600 text-xs">
@@ -153,39 +170,51 @@ const Column = ({
 };
 
 export default function Kanban() {
-  const { user } = useAuth();
+  const { user, fetchWithAuth } = useAuth();
+  const [searchParams] = useSearchParams();
+  const teamFilter = searchParams.get('teamId');
+  
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isBackendOffline, setIsBackendOffline] = useState(false);
   
-  // Form State
-  const [newTask, setNewTask] = useState({ 
-    title: '', 
-    team: 'General', 
-    priority: 'MEDIUM' as Priority,
-    assignee: 'Unassigned',
-    due_date: ''
-  });
-
   // Fetch tasks from API
+  const fetchTasks = async () => {
+    try {
+      const url = teamFilter ? `/api/kanban/tasks?team_id=${teamFilter}` : '/api/kanban/tasks';
+      const response = await fetchWithAuth(url);
+      if (!response.ok) throw new Error('Failed');
+      const data = await response.json();
+      setTasks(data);
+      setIsBackendOffline(false);
+    } catch (error) {
+      console.log("Offline mode active");
+      setIsBackendOffline(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const response = await fetch('/api/kanban/tasks');
-        if (!response.ok) throw new Error('Failed');
-        const data = await response.json();
-        setTasks(data);
-        setIsBackendOffline(false);
-      } catch (error) {
-        console.log("Offline mode active");
-        setIsBackendOffline(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchTasks();
-  }, []);
+  }, [fetchWithAuth, teamFilter]);
+
+  const handleEditTask = (task: Task) => {
+    setTaskToEdit(task);
+    setIsModalOpen(true);
+  };
+
+  const handleCreateTask = () => {
+    setTaskToEdit(null);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setTaskToEdit(null);
+  };
 
   // Helper to move tasks
   const moveTask = async (taskId: number, direction: 'left' | 'right') => {
@@ -204,13 +233,10 @@ export default function Kanban() {
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
 
     try {
-      await fetch(`/api/kanban/tasks/${taskId}`, {
+      await fetchWithAuth(`/api/kanban/tasks/${taskId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          status: newStatus,
-          userId: user?.id || null,
-          userName: user?.name || null
+          status: newStatus
         })
       });
     } catch (error) {
@@ -224,51 +250,11 @@ export default function Kanban() {
     
     setTasks(prev => prev.filter(t => t.id !== taskId));
     try {
-      await fetch(`/api/kanban/tasks/${taskId}`, { 
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.id || null,
-          userName: user?.name || null
-        })
+      await fetchWithAuth(`/api/kanban/tasks/${taskId}`, { 
+        method: 'DELETE'
       });
     } catch (error) {
       console.warn("Delete failed:", error);
-    }
-  };
-
-  // Create new task
-  const handleAddTask = async () => {
-    if (!newTask.title) return;
-
-    const taskPayload = {
-      title: newTask.title,
-      description: '',
-      status: 'TODO' as Status,
-      priority: newTask.priority,
-      team: newTask.team,
-      assignee: newTask.assignee,
-      tags: [],
-      due_date: newTask.due_date,
-      userId: user?.id || null,
-      userName: user?.name || null
-    };
-
-    try {
-      const response = await fetch('/api/kanban/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskPayload)
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setTasks([...tasks, { ...taskPayload, id: data.id, tags: [] }]);
-        setIsModalOpen(false);
-        setNewTask({ ...newTask, title: '' });
-      }
-    } catch (error) {
-      console.error("Save failed:", error);
     }
   };
 
@@ -280,14 +266,31 @@ export default function Kanban() {
       {/* Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
           <div>
-            <h1 className="text-2xl font-bold text-white mb-1">Kanban Board</h1>
-            <p className="text-zinc-500 text-sm">
-              {isBackendOffline ? 'Offline Mode' : 'Connected to Database'}
-            </p>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-white mb-1">Kanban Board</h1>
+              {teamFilter && (
+                <span className="px-2 py-0.5 bg-indigo-900/30 border border-indigo-500/30 text-indigo-400 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                  Team Filter Active
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <p className="text-zinc-500 text-sm">
+                {isBackendOffline ? 'Offline Mode' : 'Connected to Database'}
+              </p>
+              {teamFilter && (
+                <button 
+                  onClick={() => navigate('/kanban')}
+                  className="text-indigo-400 hover:text-indigo-300 text-xs font-medium underline"
+                >
+                  Clear Filter
+                </button>
+              )}
+            </div>
         </div>
         
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleCreateTask}
           className="flex items-center gap-2 bg-[#2E1065] hover:bg-[#3b0764] text-purple-100 px-5 py-2.5 rounded-lg border border-purple-900/50 transition-all text-sm font-medium shadow-[0_0_15px_-3px_rgba(88,28,135,0.3)]"
         >
           <Plus size={18} />
@@ -310,6 +313,7 @@ export default function Kanban() {
             colorClass="border-zinc-700 shadow-[0_4px_20px_-10px_rgba(255,255,255,0.05)]"
             onMoveTask={moveTask}
             onDeleteTask={deleteTask}
+            onEditTask={handleEditTask}
           />
 
           {/* In Progress Column */}
@@ -321,6 +325,7 @@ export default function Kanban() {
             colorClass="border-lime-500/50 shadow-[0_4px_20px_-10px_rgba(132,204,22,0.1)]"
             onMoveTask={moveTask}
             onDeleteTask={deleteTask}
+            onEditTask={handleEditTask}
           />
 
           {/* Done Column */}
@@ -332,59 +337,18 @@ export default function Kanban() {
             colorClass="border-emerald-500/50 shadow-[0_4px_20px_-10px_rgba(16,185,129,0.1)]"
             onMoveTask={moveTask}
             onDeleteTask={deleteTask}
+            onEditTask={handleEditTask}
           />
 
         </div>
       )}
 
-      {/* Create Task Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-[#141414] border border-zinc-800 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
-            <button 
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-zinc-500 hover:text-white"
-            >
-              <X size={20} />
-            </button>
-            
-            <h2 className="text-xl font-bold mb-6 text-white">Add New Task</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Title</label>
-                <input 
-                  type="text" 
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-sm focus:outline-none focus:border-purple-600 transition-colors text-white" 
-                  placeholder="Enter task title..." 
-                  value={newTask.title}
-                  onChange={e => setNewTask({...newTask, title: e.target.value})}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Priority</label>
-                <select 
-                  className="w-full bg-zinc-900 border border-zinc-800 rounded-lg p-3 text-sm focus:outline-none focus:border-purple-600 text-white"
-                  value={newTask.priority}
-                  onChange={e => setNewTask({...newTask, priority: e.target.value as Priority})}
-                >
-                  <option value="LOW">Low</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HIGH">High</option>
-                </select>
-              </div>
-
-              <button 
-                onClick={handleAddTask}
-                className="w-full bg-white text-black font-bold py-3 rounded-lg mt-4 hover:bg-zinc-200 transition-colors"
-              >
-                Create Task
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <TaskModal 
+        isOpen={isModalOpen} 
+        onClose={handleModalClose} 
+        onTaskUpdated={fetchTasks} 
+        taskToEdit={taskToEdit} 
+      />
     </div>
   );
 }

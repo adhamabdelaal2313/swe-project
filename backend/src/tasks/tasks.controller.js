@@ -1,73 +1,125 @@
 const db = require('../config/db.config');
 const logActivity = require('../utils/activityLogger');
+const Joi = require('joi');
 
-// GET: Fetch all tasks
+// Validation Schema for Tasks
+const taskSchema = Joi.object({
+  title: Joi.string().required().max(255),
+  description: Joi.string().allow('', null),
+  status: Joi.string().valid('TODO', 'IN_PROGRESS', 'DONE').default('TODO'),
+  priority: Joi.string().valid('LOW', 'MEDIUM', 'HIGH').default('MEDIUM'),
+  team_id: Joi.number().integer().allow(null),
+  assignee_id: Joi.number().integer().allow(null),
+  tags: Joi.array().items(Joi.string()).default([]),
+  due_date: Joi.string().allow('', null),
+  is_completed: Joi.boolean().default(false)
+});
+
+// GET: Fetch all tasks with optional filters
 const getAllTasks = async (req, res) => {
     try {
-        const sql = 'SELECT * FROM tasks';
-        const [tasks] = await db.query(sql);
-        res.json(tasks);
+        const { team_id, assignee_id, status } = req.query;
+        let sql = `
+            SELECT t.*, u.name as assignee_name, tm.team_name 
+            FROM tasks t
+            LEFT JOIN users u ON t.assignee_id = u.id
+            LEFT JOIN teams tm ON t.team_id = tm.team_id
+            WHERE 1=1
+        `;
+        const params = [];
+
+        if (team_id) {
+            sql += " AND t.team_id = ?";
+            params.push(team_id);
+        }
+        if (assignee_id) {
+            sql += " AND t.assignee_id = ?";
+            params.push(assignee_id);
+        }
+        if (status) {
+            sql += " AND t.status = ?";
+            params.push(status);
+        }
+
+        sql += " ORDER BY t.created_at DESC";
+
+        const [tasks] = await db.query(sql, params);
+        
+        // Format tags
+        const formattedTasks = tasks.map(task => ({
+            ...task,
+            tags: task.tags ? task.tags.split(',') : []
+        }));
+
+        res.json(formattedTasks);
     } catch (error) {
         console.error('Error fetching tasks:', error);
-        res.status(500).json({ 
-            message: 'Failed to fetch tasks from the database.',
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Failed to fetch tasks', error: error.message });
     }
 };
 
 // POST: Create a new task
 const createTask = async (req, res) => {
-    const { title, description, userId, userName } = req.body; 
-
-    if (!title) {
-        return res.status(400).json({ message: 'Task title is required!' });
-    }
-
     try {
-        const sql = 'INSERT INTO tasks (title, description) VALUES (?, ?)';
-        const [result] = await db.query(sql, [title, description]);
+        const { error, value } = taskSchema.validate(req.body, { stripUnknown: true });
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
 
-        await logActivity(`Created task: ${title} (#${result.insertId})`, userId || null, userName || null);
+        const { title, description, status, priority, team_id, assignee_id, tags, due_date } = value;
+        const tagsString = tags.join(',');
+
+        const sql = `
+            INSERT INTO tasks (title, description, status, priority, team_id, assignee_id, tags, due_date) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+        const [result] = await db.query(sql, [
+            title, description, status, priority, team_id, assignee_id, tagsString, due_date
+        ]);
+
+        const userId = req.user ? req.user.id : null;
+        const userName = req.user ? req.user.name : null;
+        await logActivity(`Created task: ${title} (#${result.insertId})`, userId, userName);
 
         res.status(201).json({
             message: 'Task created successfully! 🎉',
             taskId: result.insertId,
-            title: title
+            title
         });
     } catch (error) {
         console.error('Error creating task:', error);
-        res.status(500).json({ 
-            message: 'Failed to create task in the database.',
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Failed to create task', error: error.message });
     }
 };
 
 // PUT: Update a task
 const updateTask = async (req, res) => {
     const taskId = req.params.id;
-    const { title, description, is_completed } = req.body; 
-
-    if (!title && !description && is_completed === undefined) {
-        return res.status(400).json({ message: 'No fields provided for update.' });
-    }
-
     try {
+        const { error, value } = taskSchema.fork(
+            ['title', 'description', 'status', 'priority', 'team_id', 'assignee_id', 'tags', 'due_date', 'is_completed'], 
+            (schema) => schema.optional()
+        ).validate(req.body, { stripUnknown: true });
+
+        if (error) {
+            return res.status(400).json({ message: error.details[0].message });
+        }
+
+        if (Object.keys(value).length === 0) {
+            return res.status(400).json({ message: 'No fields provided for update.' });
+        }
+
         const fields = [];
         const values = [];
 
-        if (title) {
-            fields.push('title = ?');
-            values.push(title);
-        }
-        if (description) {
-            fields.push('description = ?');
-            values.push(description);
-        }
-        if (is_completed !== undefined) {
-            fields.push('is_completed = ?');
-            values.push(is_completed ? 1 : 0); 
+        for (const [key, val] of Object.entries(value)) {
+            if (key === 'tags') {
+                fields.push('tags = ?');
+                values.push(val.join(','));
+            } else {
+                fields.push(`${key} = ?`);
+                values.push(val);
+            }
         }
 
         const sql = `UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`;
@@ -76,31 +128,23 @@ const updateTask = async (req, res) => {
         const [result] = await db.query(sql, values);
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ 
-                message: `Task with ID ${taskId} not found or no new changes provided.` 
-            });
+            return res.status(404).json({ message: `Task with ID ${taskId} not found.` });
         }
 
-        const { userId, userName } = req.body;
-        await logActivity(`Updated task ${taskId}`, userId || null, userName || null);
+        const userId = req.user ? req.user.id : null;
+        const userName = req.user ? req.user.name : null;
+        await logActivity(`Updated task ${taskId}`, userId, userName);
 
-        res.json({
-            message: `Task ID ${taskId} updated successfully.`,
-            updatedId: taskId
-        });
+        res.json({ message: `Task ID ${taskId} updated successfully.`, updatedId: taskId });
     } catch (error) {
         console.error('Error updating task:', error);
-        res.status(500).json({ 
-            message: 'Failed to update task in the database.',
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Failed to update task', error: error.message });
     }
 };
 
 // DELETE: Delete a task
 const deleteTask = async (req, res) => {
     const taskId = req.params.id; 
-
     try {
         const sql = 'DELETE FROM tasks WHERE id = ?';
         const [result] = await db.query(sql, [taskId]);
@@ -109,19 +153,14 @@ const deleteTask = async (req, res) => {
             return res.status(404).json({ message: `Task with ID ${taskId} not found.` });
         }
 
-        const { userId, userName } = req.body;
-        await logActivity(`Deleted task ${taskId}`, userId || null, userName || null);
+        const userId = req.user ? req.user.id : null;
+        const userName = req.user ? req.user.name : null;
+        await logActivity(`Deleted task ${taskId}`, userId, userName);
 
-        res.json({
-            message: `Task ID ${taskId} deleted successfully.`,
-            deletedId: taskId
-        });
+        res.json({ message: `Task ID ${taskId} deleted successfully.`, deletedId: taskId });
     } catch (error) {
         console.error('Error deleting task:', error);
-        res.status(500).json({ 
-            message: 'Failed to delete task from the database.',
-            error: error.message 
-        });
+        res.status(500).json({ message: 'Failed to delete task', error: error.message });
     }
 };
 
@@ -131,4 +170,3 @@ module.exports = {
     updateTask,
     deleteTask
 };
-

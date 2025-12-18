@@ -60,7 +60,5 @@ app.use((err, req, res, next) => {
     });
 });
 
-// 6. Tell the server to listen for requests <--- LAST BLOCK
-app.listen(PORT, () => {
-    console.log(`Server is happily listening on port ${PORT}`);
-});
+// 6. Export the app for testing
+module.exports = app;
