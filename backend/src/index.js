@@ -2,6 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 // Feature-first architecture: Import routes from each feature folder
 const portalRoutes = require('./portal/portal.routes');
@@ -11,37 +12,40 @@ const teamsRoutes = require('./teams/teams.routes');
 const dashboardRoutes = require('./dashboard/dashboard.routes');
 
 // Initialize database connection
-// 🚨 CRITICAL DEBUGGING STEP: If you still see no messages, try commenting this line out:
 require('./config/db.config.js'); 
 
 // 2. Start the Express server part
 const app = express();
 app.use(cors()); // Enable CORS for all routes
 app.use(express.json()); // Allows Express to read JSON data from requests
-const PORT = process.env.PORT || 3000;
 
-// 3. The server's main page message
-app.get('/', (req, res) => {
-    res.send('TeamFlow Backend is ON! 🌟');
-});
-
-// 4. Setup Routers for API requests (Feature-first architecture)
+// 3. Serve API routes
 app.use('/api/portal', portalRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/kanban', kanbanRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/dashboard', dashboardRoutes); 
 
-// --- 5. GLOBAL ERROR HANDLING ---
+// 4. Serve static files from the frontend/dist folder
+app.use(express.static(path.join(__dirname, '../../frontend/dist')));
 
-// 5a. 404 Handler (Catch any request that didn't match a route)
+// 5. Catch-all: serve the frontend's index.html for any non-API GET requests
+app.use((req, res, next) => {
+    // Only handle GET requests that are not for API routes
+    if (req.method === 'GET' && !req.path.startsWith('/api')) {
+        return res.sendFile(path.join(__dirname, '../../frontend/dist', 'index.html'));
+    }
+    next();
+});
+
+// --- 6. GLOBAL ERROR HANDLING ---
+
+// 6a. 404 Handler (Catch any request that didn't match a route)
 app.use((req, res, next) => {
     res.status(404).send("404: Route Not Found");
 });
 
-// 5b. Global Error Handler (CRITICAL: Catches all synchronous and asynchronous errors)
-// This is an Express error handling middleware (four arguments)
-// 
+// 6b. Global Error Handler
 app.use((err, req, res, next) => {
     // 💡 This is the line that will print the hidden error!
     console.error("🚨 GLOBAL CAUGHT ERROR: ", err.stack); 

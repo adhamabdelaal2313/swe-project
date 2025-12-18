@@ -17,6 +17,7 @@ import Sidebar from './sidebar/sidebar';
 import SidebarToggle from './sidebar/Components/Toggle/sidebartoggle';
 import { AuthProvider, useAuth } from './portal/Context/AuthContext';
 import { SidebarProvider, useSidebar } from './sidebar/Components/Context/SidebarContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 // Component to update page title based on route
 function PageTitle() {
@@ -45,7 +46,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
 
   if (!isAuthReady) {
     return (
-      <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-white flex items-center justify-center">
         <span className="text-zinc-500 text-sm">Loading...</span>
       </div>
     );
@@ -56,7 +57,7 @@ function ProtectedLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-white flex overflow-hidden">
+    <div className="min-h-screen bg-zinc-50 dark:bg-[#09090b] text-zinc-900 dark:text-white flex overflow-hidden">
       <Sidebar />
 
       {/* Sidebar toggle button - always visible, moves with sidebar on desktop */}
@@ -118,13 +119,15 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <SidebarProvider>
-        <Router>
-          <PageTitle />
-          <AppRoutes />
-        </Router>
-      </SidebarProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <SidebarProvider>
+          <Router>
+            <PageTitle />
+            <AppRoutes />
+          </Router>
+        </SidebarProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

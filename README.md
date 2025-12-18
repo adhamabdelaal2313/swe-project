@@ -118,3 +118,35 @@ cd backend && npm test
 # Frontend Tests
 cd frontend && npm test
 ```
+
+---
+
+## 🚀 Deployment
+
+TeamFlow is optimized for production deployment as a single unified service.
+
+### 1. Unified Production Build
+The project is configured so the Backend serves the Frontend. To build the entire project for production:
+```bash
+npm run build
+```
+
+### 2. Deployment Platforms (Railway, Render, etc.)
+- **Railway:** Connect your GitHub repo. Railway will automatically detect the root `package.json`, run the build, and start the server.
+- **Render:** Create a new **Web Service**, connect your repo, and use `npm run build` as the build command and `npm start` as the start command.
+
+### 3. Required Environment Variables
+Ensure the following are set in your production environment:
+- `DATABASE_URL`: Your MySQL connection string (e.g., `mysql://user:pass@host:port/db`).
+- `JWT_SECRET`: A long, random string for securing sessions.
+- `PORT`: Usually provided automatically by the platform (defaults to 3000).
+
+---
+
+## 🧪 Testing Strategy
+
+The project includes a comprehensive suite of tests to ensure stability:
+- **Backend (Jest/Supertest):** Tests API endpoints, database interactions, and authentication middleware.
+- **Frontend (Vitest/RTL):** Tests component rendering, user interactions, and state management.
+
+To run all tests: `npm run test` (from root).

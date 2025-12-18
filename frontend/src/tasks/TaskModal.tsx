@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../portal/Context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 // Task shape shared with TaskList
 interface Task {
@@ -49,6 +50,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   const isEditing = taskToEdit !== null;
   const { fetchWithAuth, user } = useAuth();
+  const { theme } = useTheme();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -143,137 +145,148 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
-        className="bg-[#141414] border border-zinc-800 w-full max-w-lg rounded-2xl p-6 relative shadow-2xl"
+        className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 w-full max-w-lg rounded-2xl p-6 relative shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
           disabled={loading}
-          className="absolute top-4 right-4 text-zinc-500 hover:text-white text-xl transition-colors"
+          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-xl transition-colors"
         >
           &times;
         </button>
 
-        <h3 className="text-xl font-bold text-white mb-6 pb-4 border-b border-zinc-800/50">
+        <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-6 pb-4 border-b border-zinc-100 dark:border-zinc-800/50">
           {isEditing ? 'Edit Task' : 'Create New Task'}
         </h3>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Title</label>
+            <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1.5">Title</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Task Title"
               disabled={loading}
-              className="w-full bg-[#09090b] border border-zinc-700 rounded-lg p-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all disabled:opacity-50"
+              className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all disabled:opacity-50 transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Description</label>
+            <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1.5">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Details..."
               rows={3}
               disabled={loading}
-              className="w-full bg-[#09090b] border border-zinc-700 rounded-lg p-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-all disabled:opacity-50"
+              className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none transition-all disabled:opacity-50 transition-colors"
             />
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Status</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                disabled={loading}
-                className="w-full bg-[#09090b] border border-zinc-700 rounded-lg p-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 appearance-none"
-              >
-                <option value="TODO">To Do</option>
-                <option value="IN_PROGRESS">In Progress</option>
-                <option value="DONE">Done</option>
-              </select>
+              <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1.5">Status</label>
+              <div className="relative">
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  disabled={loading}
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 appearance-none transition-colors"
+                >
+                  <option value="TODO">To Do</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="DONE">Done</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-500 text-xs">▼</div>
+              </div>
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Priority</label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-                disabled={loading}
-                className="w-full bg-[#09090b] border border-zinc-700 rounded-lg p-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 appearance-none"
-              >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-              </select>
+              <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1.5">Priority</label>
+              <div className="relative">
+                <select
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                  disabled={loading}
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 appearance-none transition-colors"
+                >
+                  <option value="LOW">Low</option>
+                  <option value="MEDIUM">Medium</option>
+                  <option value="HIGH">High</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-500 text-xs">▼</div>
+              </div>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
-              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Team</label>
-              <select
-                value={teamId || ''}
-                onChange={(e) => setTeamId(e.target.value ? Number(e.target.value) : null)}
-                disabled={loading}
-                className="w-full bg-[#09090b] border border-zinc-700 rounded-lg p-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 appearance-none"
-              >
-                <option value="">Select team</option>
-                {teams.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.title}
-                  </option>
-                ))}
-              </select>
+              <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1.5">Team</label>
+              <div className="relative">
+                <select
+                  value={teamId || ''}
+                  onChange={(e) => setTeamId(e.target.value ? Number(e.target.value) : null)}
+                  disabled={loading}
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 appearance-none transition-colors"
+                >
+                  <option value="">Select team</option>
+                  {teams.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.title}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-500 text-xs">▼</div>
+              </div>
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Assignee</label>
-              <select
-                value={assigneeId || ''}
-                onChange={(e) => setAssigneeId(e.target.value ? Number(e.target.value) : null)}
-                disabled={loading}
-                className="w-full bg-[#09090b] border border-zinc-700 rounded-lg p-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 appearance-none"
-              >
-                <option value="">Unassigned</option>
-                {/* Normally we'd fetch users here too */}
-                {user && <option value={user.id}>{user.name} (You)</option>}
-              </select>
+              <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1.5">Assignee</label>
+              <div className="relative">
+                <select
+                  value={assigneeId || ''}
+                  onChange={(e) => setAssigneeId(e.target.value ? Number(e.target.value) : null)}
+                  disabled={loading}
+                  className="w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 appearance-none transition-colors"
+                >
+                  <option value="">Unassigned</option>
+                  {user && <option value={user.id}>{user.name} (You)</option>}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-zinc-500 text-xs">▼</div>
+              </div>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-zinc-400 uppercase mb-1.5">Due Date</label>
+            <label className="block text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase mb-1.5">Due Date</label>
             <input
               type="date"
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               disabled={loading}
-              className="w-full bg-[#09090b] border border-zinc-700 rounded-lg p-3 text-sm text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 [color-scheme:dark] disabled:opacity-50"
+              className={`w-full bg-zinc-50 dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 disabled:opacity-50 transition-colors ${theme === 'dark' ? '[color-scheme:dark]' : '[color-scheme:light]'}`}
             />
           </div>
 
-          {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+          {error && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{error}</p>}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-zinc-800/50 mt-6">
+          <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800/50 mt-6">
             <button
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="px-4 py-2.5 rounded-lg text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-100 transition-colors disabled:opacity-50"
+              className="px-4 py-2.5 rounded-lg text-sm font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-100 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 transition-colors disabled:opacity-50"
+              className="px-4 py-2.5 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 transition-colors disabled:opacity-50"
             >
               {loading ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Task'}
             </button>

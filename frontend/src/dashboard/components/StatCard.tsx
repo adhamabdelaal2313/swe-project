@@ -9,24 +9,25 @@ interface StatCardProps {
 
 export default function StatCard({ title, value, icon, color }: StatCardProps) {
   // Exact colors from your design
-  const theme: Record<StatCardProps['color'], { border: string; text: string; bg: string }> = {
-    cyan:   { border: 'border-cyan-400', text: 'text-cyan-400', bg: 'bg-cyan-400/10' },
-    green:  { border: 'border-lime-500', text: 'text-lime-500', bg: 'bg-lime-500/10' },
-    purple: { border: 'border-purple-500', text: 'text-purple-500', bg: 'bg-purple-500/10' },
-    orange: { border: 'border-orange-500', text: 'text-orange-500', bg: 'bg-orange-500/10' },
+  const theme: Record<StatCardProps['color'], { border: string; text: string; bg: string; shadow: string }> = {
+    cyan:   { border: 'border-cyan-400', text: 'text-cyan-400', bg: 'bg-cyan-400/10', shadow: 'shadow-cyan-500/10' },
+    green:  { border: 'border-lime-500', text: 'text-lime-500', bg: 'bg-lime-500/10', shadow: 'shadow-lime-500/10' },
+    purple: { border: 'border-purple-500', text: 'text-purple-500', bg: 'bg-purple-500/10', shadow: 'shadow-purple-500/10' },
+    orange: { border: 'border-orange-500', text: 'text-orange-500', bg: 'bg-orange-500/10', shadow: 'shadow-orange-500/10' },
   };
 
   const style = theme[color] || theme.cyan;
 
   return (
-    <div className={`bg-zinc-900 border-t-4 ${style.border} border-x border-b border-zinc-800 rounded-xl p-6 relative`}>
-      <div className="flex justify-between items-start">
+    <div className={`bg-white dark:bg-zinc-900 border-t-4 ${style.border} border-x border-b border-zinc-200 dark:border-zinc-800 rounded-xl p-6 relative shadow-lg ${style.shadow} dark:shadow-none hover:translate-y-[-2px] transition-all duration-300 overflow-hidden`}>
+      <div className={`absolute -right-8 -top-8 w-24 h-24 ${style.bg} rounded-full blur-2xl opacity-50`}></div>
+      <div className="flex justify-between items-start relative z-10">
         <div>
-          <h3 className="text-3xl font-bold text-white mb-1">{value}</h3>
-          <p className="text-zinc-500 text-sm font-medium uppercase tracking-wider">{title}</p>
+          <h3 className="text-3xl font-bold text-zinc-900 dark:text-white mb-1">{value}</h3>
+          <p className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-widest">{title}</p>
         </div>
-        <div className={`p-3 rounded-lg ${style.bg} ${style.text}`}>
-          {icon}
+        <div className={`p-3 rounded-xl ${style.bg} ${style.text} shadow-inner`}>
+          {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: 2.5 })}
         </div>
       </div>
     </div>

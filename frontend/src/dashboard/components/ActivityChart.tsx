@@ -1,4 +1,5 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ActivityChartProps {
   data?: Array<{ name: string; tasks: number }>;
@@ -12,28 +13,60 @@ const defaultData = [
 ];
 
 export default function ActivityChart({ data }: ActivityChartProps) {
+  const { theme } = useTheme();
   const chartData = (data && data.length > 0) ? data : defaultData;
 
+  const isDark = theme === 'dark';
+
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 h-[350px]">
-      <h2 className="text-lg font-bold text-white mb-4">Task Creation (Last 7 Days)</h2>
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 h-[400px] shadow-xl shadow-zinc-200/50 dark:shadow-none relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl -z-10 rounded-full" />
+      <h2 className="text-xl font-black text-zinc-900 dark:text-white mb-8 flex items-center gap-3">
+        <div className="w-2 h-6 bg-indigo-500 rounded-full" />
+        Activity Overview
+      </h2>
       <div className="h-[280px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData}>
             <defs>
               <linearGradient id="colorTasks" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4}/>
                 <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-            <XAxis dataKey="name" stroke="#71717a" tick={{fontSize: 12}} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "#27272a" : "#f1f1f4"} vertical={false} />
+            <XAxis 
+              dataKey="name" 
+              stroke={isDark ? "#71717a" : "#a1a1aa"} 
+              tick={{fontSize: 10, fontWeight: 700}} 
+              axisLine={false} 
+              tickLine={false} 
+              dy={10}
+            />
             <YAxis hide />
             <Tooltip 
-              contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff' }}
-              itemStyle={{ color: '#818cf8' }}
+              cursor={{ stroke: '#6366f1', strokeWidth: 2, strokeDasharray: '5 5' }}
+              contentStyle={{ 
+                backgroundColor: isDark ? '#18181b' : '#fff', 
+                borderColor: isDark ? '#27272a' : '#e4e4e7', 
+                color: isDark ? '#fff' : '#000',
+                borderRadius: '16px',
+                borderWidth: '2px',
+                boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)',
+                padding: '12px'
+              }}
+              itemStyle={{ color: '#6366f1', fontWeight: 900, fontSize: '12px', textTransform: 'uppercase' }}
+              labelStyle={{ fontWeight: 900, marginBottom: '4px', color: isDark ? '#71717a' : '#a1a1aa', fontSize: '10px', textTransform: 'uppercase' }}
             />
-            <Area type="monotone" dataKey="tasks" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorTasks)" />
+            <Area 
+              type="monotone" 
+              dataKey="tasks" 
+              stroke="#6366f1" 
+              strokeWidth={4} 
+              fillOpacity={1} 
+              fill="url(#colorTasks)" 
+              animationDuration={1500}
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>

@@ -77,15 +77,15 @@ export function CreateTeamModal({ isOpen, onClose, onTeamCreated }: CreateTeamMo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl w-full max-w-md shadow-2xl relative overflow-hidden">
+      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl w-full max-w-md shadow-2xl relative overflow-hidden">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-zinc-800">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Users className="text-cyan-400" size={24} />
+        <div className="flex items-center justify-between p-6 border-b border-zinc-100 dark:border-zinc-800">
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+            <Users className="text-cyan-600 dark:text-cyan-400" size={24} />
             Create New Team
           </h2>
-          <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-white transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -95,32 +95,32 @@ export function CreateTeamModal({ isOpen, onClose, onTeamCreated }: CreateTeamMo
           
           {/* Team Name Input */}
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">Team Name</label>
+            <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">Team Name</label>
             <input
               type="text"
               required
               value={teamName}
               // Update state with untrimmed value (trimming happens on submit)
               onChange={(e) => setTeamName(e.target.value)}
-              className="w-full bg-black/50 border border-zinc-700 rounded-lg p-3 text-white focus:outline-none focus:border-cyan-500 transition-colors"
+              className="w-full bg-zinc-50 dark:bg-black/50 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 text-zinc-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-colors"
               placeholder="e.g. Frontend Squad"
             />
           </div>
 
           {/* Description Input */}
           <div>
-            <label className="block text-sm font-medium text-zinc-400 mb-1">Description</label>
+            <label className="block text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-1">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-black/50 border border-zinc-700 rounded-lg p-3 text-white focus:outline-none focus:border-cyan-500 transition-colors h-24 resize-none"
+              className="w-full bg-zinc-50 dark:bg-black/50 border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 text-zinc-900 dark:text-white focus:outline-none focus:border-cyan-500 transition-colors h-24 resize-none"
               placeholder="What is this team working on?"
             />
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-2 text-red-400 text-sm">
+            <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg flex items-center gap-2 text-red-600 dark:text-red-400 text-sm">
               <AlertCircle size={16} />
               {error}
             </div>
@@ -128,7 +128,7 @@ export function CreateTeamModal({ isOpen, onClose, onTeamCreated }: CreateTeamMo
 
           {/* Success Message */}
           {success && (
-            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-2 text-green-400 text-sm">
+            <div className="p-3 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-lg flex items-center gap-2 text-green-600 dark:text-green-400 text-sm">
               <Check size={16} />
               Team created successfully!
             </div>
@@ -139,14 +139,14 @@ export function CreateTeamModal({ isOpen, onClose, onTeamCreated }: CreateTeamMo
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-zinc-400 hover:text-white transition-colors"
+              className="px-4 py-2 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-white transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isLoading || success}
-              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 dark:hover:bg-cyan-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg shadow-cyan-500/20"
             >
               {isLoading ? 'Creating...' : 'Create Team'}
             </button>
