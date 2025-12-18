@@ -42,7 +42,7 @@ describe('Auth API', () => {
       .send({ 
         name: 'Test User', 
         email: 'new@example.com', 
-        password: 'password123' 
+        password: 'TestPassword123!' 
       });
     
     expect(res.statusCode).toEqual(201);
