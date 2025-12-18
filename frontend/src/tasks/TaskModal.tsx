@@ -24,6 +24,7 @@ interface TaskModalProps {
   onClose: () => void;
   onTaskUpdated: () => void;
   taskToEdit: Task | null;
+  defaultTeamId?: number | null;
 }
 
 const TaskModal: React.FC<TaskModalProps> = ({
@@ -31,6 +32,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   onClose,
   onTaskUpdated,
   taskToEdit,
+  defaultTeamId = null
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -64,12 +66,12 @@ const TaskModal: React.FC<TaskModalProps> = ({
       setDescription('');
       setStatus('TODO');
       setPriority('MEDIUM');
-      setTeamId(null);
+      setTeamId(defaultTeamId);
       setAssigneeId(null);
       setDueDate('');
     }
     setError(null);
-  }, [isOpen, taskToEdit]);
+  }, [isOpen, taskToEdit, defaultTeamId]);
 
   useEffect(() => {
     if (!isOpen) return;

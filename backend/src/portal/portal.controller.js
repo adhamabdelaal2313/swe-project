@@ -29,11 +29,13 @@ const generateToken = (user) => {
 // POST: Login user
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
     }
+
+    email = email.trim().toLowerCase();
 
     // Query user from database
     const [users] = await db.query(
@@ -42,14 +44,22 @@ const login = async (req, res) => {
     );
 
     if (users.length === 0) {
+      console.log(`Login attempt failed: Email ${email} not found`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const user = users[0];
     
     // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
+    let isMatch = await bcrypt.compare(password, user.password);
+    
+    // Fallback for demo/plain-text passwords (not for production)
+    if (!isMatch && !user.password.startsWith('$2')) {
+      isMatch = (password === user.password);
+    }
+
     if (!isMatch) {
+      console.log(`Login attempt failed: Password mismatch for ${email}`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
@@ -146,6 +156,38 @@ const getCurrentUser = async (req, res) => {
   }
 };
 
+// GET: Refresh session and get new token with latest role
+const refreshSession = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    const [users] = await db.query(
+      'SELECT id, name, email, role FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = users[0];
+    const token = generateToken(user);
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role || 'user'
+      }
+    });
+  } catch (error) {
+    console.error('Refresh session error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // POST: Logout user (log activity)
 const logout = async (req, res) => {
   try {
@@ -174,5 +216,6 @@ module.exports = {
   login,
   register,
   getCurrentUser,
-  logout
+  logout,
+  refreshSession
 };

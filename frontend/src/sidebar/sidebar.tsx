@@ -105,8 +105,22 @@ export default function Sidebar() {
               <div className="text-white font-semibold text-sm whitespace-nowrap overflow-hidden text-ellipsis">
                 {user?.name || 'User'}
               </div>
-              <div className="text-zinc-400 text-xs mt-0.5">
-                {user?.email || 'user@teamflow.com'}
+              <div className="flex flex-col">
+                <div className={`text-zinc-400 mt-0.5 leading-tight break-all ${
+                  (user?.email?.length || 0) > 25 ? 'text-[9px]' : 
+                  (user?.email?.length || 0) > 20 ? 'text-[10px]' : 'text-xs'
+                }`}>
+                  {user?.email || 'user@teamflow.com'}
+                </div>
+                <div className="mt-1">
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border ${
+                    user?.role === 'admin' 
+                      ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' 
+                      : 'bg-zinc-800/50 border-zinc-700/50 text-zinc-500'
+                  }`}>
+                    {user?.role || 'User'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

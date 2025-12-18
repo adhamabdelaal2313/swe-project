@@ -83,7 +83,7 @@ useCaseDiagram
     U --> UC6
 
     A --> UC7
-    A --|> U
+    A --|> U    
 ```
 
 ## 3. Sequence Diagram: Authentication Flow

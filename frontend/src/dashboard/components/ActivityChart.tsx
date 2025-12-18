@@ -11,13 +11,15 @@ const defaultData = [
   { name: 'Sun', tasks: 0 },
 ];
 
-export default function ActivityChart({ data = defaultData }: ActivityChartProps) {
+export default function ActivityChart({ data }: ActivityChartProps) {
+  const chartData = (data && data.length > 0) ? data : defaultData;
+
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 h-[350px]">
       <h2 className="text-lg font-bold text-white mb-4">Task Creation (Last 7 Days)</h2>
       <div className="h-[280px] w-full">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={data.length > 0 ? data : defaultData}>
+          <AreaChart data={chartData}>
             <defs>
               <linearGradient id="colorTasks" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>

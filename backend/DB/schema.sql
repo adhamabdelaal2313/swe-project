@@ -66,10 +66,10 @@ CREATE TABLE activities (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Insert demo users (passwords will need hashing in the app, but for schema demo we keep them)
+-- Insert demo users (passwords are bcrypt hashed)
 INSERT INTO users (name, email, password, role) VALUES
-('Admin User', 'admin@teamflow.com', 'admin123', 'admin'),
-('Adham', 'A.ahmad2313@nu.edu.eg', 'adhoma2026', 'user');
+('Admin User', 'admin@teamflow.com', '$2b$10$QW.peD.8B3yY0/l5MdFg5umfNWCAbjZBuZGA.YI.AB4CBbw.u0K.C', 'admin'),
+('Adham', 'A.ahmad2313@nu.edu.eg', '$2b$10$q239TN7mKiT8UbZZmEXYBu26lPdiqkuNGeBAhs85Hz69sXRScqDIe', 'user');
 
 -- Insert demo team
 INSERT INTO teams (team_name, description, accent_color) VALUES

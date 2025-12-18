@@ -17,17 +17,17 @@ export default function Portal() {
     setError('');
     setIsLoading(true);
 
-    let success = false;
+    let result;
     if (isLogin) {
-      success = await login(email, password);
+      result = await login(email, password);
     } else {
-      success = await register(name, email, password);
+      result = await register(name, email, password);
     }
     
-    if (success) {
+    if (result.success) {
       navigate('/dashboard', { replace: true });
     } else {
-      setError(isLogin ? 'Invalid email or password.' : 'Registration failed. User may already exist.');
+      setError(result.message || (isLogin ? 'Invalid email or password.' : 'Registration failed.'));
       setIsLoading(false);
     }
   };

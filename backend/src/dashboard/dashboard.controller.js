@@ -4,23 +4,35 @@ const logActivity = require('../utils/activityLogger');
 // --- GET: Dashboard Stats ---
 const getDashboardStats = async (req, res) => {
   try {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    let baseSql = 'FROM tasks t';
+    let params = [];
+    
+    if (userRole !== 'admin') {
+      baseSql += ' LEFT JOIN team_members tm ON t.team_id = tm.team_id AND tm.user_id = ?';
+      baseSql += ' WHERE (tm.id IS NOT NULL OR t.assignee_id = ? OR t.team_id IS NULL)';
+      params.push(userId, userId);
+    }
+
     // 1. Run SQL Queries
-    const [total] = await db.query('SELECT COUNT(*) as count FROM tasks');
-    const [todo] = await db.query('SELECT COUNT(*) as count FROM tasks WHERE status = "TODO"');
-    const [inProgress] = await db.query('SELECT COUNT(*) as count FROM tasks WHERE status = "IN_PROGRESS"');
-    const [done] = await db.query('SELECT COUNT(*) as count FROM tasks WHERE status = "DONE"');
+    const [total] = await db.query(`SELECT COUNT(*) as count ${baseSql}`, params);
+    const [todo] = await db.query(`SELECT COUNT(*) as count ${baseSql} ${userRole === 'admin' ? 'WHERE' : 'AND'} status = "TODO"`, params);
+    const [inProgress] = await db.query(`SELECT COUNT(*) as count ${baseSql} ${userRole === 'admin' ? 'WHERE' : 'AND'} status = "IN_PROGRESS"`, params);
+    const [done] = await db.query(`SELECT COUNT(*) as count ${baseSql} ${userRole === 'admin' ? 'WHERE' : 'AND'} status = "DONE"`, params);
     
     // 2. Fetch Chart Data (Tasks Created in Last 7 days)
     const [chartData] = await db.query(`
       SELECT 
-        DATE_FORMAT(created_at, '%a') as name,
+        DATE_FORMAT(t.created_at, '%a') as name,
         COUNT(*) as tasks,
-        DATE(created_at) as fullDate
-      FROM tasks 
-      WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        DATE(t.created_at) as fullDate
+      ${baseSql}
+      ${userRole === 'admin' ? 'WHERE' : 'AND'} t.created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
       GROUP BY fullDate, name
       ORDER BY fullDate ASC
-    `);
+    `, params);
 
     // Ensure we have all 7 days even if some are 0
     const days = [];

@@ -10,7 +10,6 @@ import { useAuth } from '../portal/Context/AuthContext';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import TaskModal from '../tasks/TaskModal';
 
-// ... rest of the types ...
 type Priority = 'HIGH' | 'MEDIUM' | 'LOW';
 type Status = 'TODO' | 'IN_PROGRESS' | 'DONE';
 
@@ -29,17 +28,54 @@ interface Task {
 }
 
 // --- Components ---
-const PriorityBadge = ({ priority }: { priority: Priority }) => {
+const PriorityBadge = ({ 
+  priority, 
+  onChange 
+}: { 
+  priority: Priority; 
+  onChange?: (p: Priority) => void;
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
   const styles = {
     HIGH: 'text-red-500 border-red-900/50 bg-red-950/20',
     MEDIUM: 'text-yellow-500 border-yellow-900/50 bg-yellow-950/20',
     LOW: 'text-emerald-400 border-emerald-900/50 bg-emerald-950/20',
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const close = () => setIsOpen(false);
+    window.addEventListener('click', close);
+    return () => window.removeEventListener('click', close);
+  }, [isOpen]);
+
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 border rounded uppercase ${styles[priority]}`}>
-      {priority}
-    </span>
+    <div className="relative inline-block">
+      <div
+        onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }}
+        className={`text-[10px] font-bold px-2 py-0.5 border rounded uppercase cursor-pointer transition-all hover:brightness-125 flex items-center gap-1 ${styles[priority]}`}
+      >
+        {priority}
+        <span className="text-[8px] opacity-50">▼</span>
+      </div>
+      
+      {isOpen && (
+        <div className="absolute top-full right-0 mt-1 w-28 bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl z-[110] overflow-hidden" onClick={e => e.stopPropagation()}>
+          {(['LOW', 'MEDIUM', 'HIGH'] as Priority[]).map(p => (
+            <button
+              key={p}
+              onClick={() => { onChange?.(p); setIsOpen(false); }}
+              className={`w-full text-left px-3 py-2 text-[10px] font-bold border-none transition-colors flex items-center justify-between ${
+                p === 'LOW' ? 'text-emerald-400' : p === 'MEDIUM' ? 'text-yellow-500' : 'text-red-500'
+              } hover:bg-zinc-800 ${priority === p ? 'bg-zinc-800/50' : ''}`}
+            >
+              {p}
+              {priority === p && <span className="text-[8px]">✓</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -47,12 +83,24 @@ const TaskCard = ({
   task, 
   onMove,
   onDelete,
-  onEdit
+  onEdit,
+  isEditing,
+  onStartEdit,
+  onSaveEdit,
+  editingValue,
+  setEditingValue,
+  onPriorityChange
 }: { 
   task: Task; 
   onMove: (id: number, direction: 'left' | 'right') => void;
   onDelete: (id: number) => void;
   onEdit: (task: Task) => void;
+  isEditing: boolean;
+  onStartEdit: () => void;
+  onSaveEdit: (newTitle: string) => void;
+  editingValue: string;
+  setEditingValue: (v: string) => void;
+  onPriorityChange: (id: number, p: Priority) => void;
 }) => {
   return (
     <div className="group relative bg-[#141414] border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors duration-200">
@@ -97,14 +145,33 @@ const TaskCard = ({
 
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1"></div> 
-        <PriorityBadge priority={task.priority} />
+        <PriorityBadge 
+          priority={task.priority} 
+          onChange={(p) => onPriorityChange(task.id, p)}
+        />
       </div>
 
       <div className="flex justify-between items-start mb-2">
         <span className="text-[10px] text-zinc-500 uppercase font-medium tracking-wider">{task.team_name || 'General'}</span>
       </div>
 
-      <h3 className="text-zinc-100 font-semibold text-sm mb-1">{task.title}</h3>
+      {isEditing ? (
+        <input 
+          autoFocus
+          className="w-full bg-black border border-indigo-500 rounded px-2 py-1 text-sm text-white mb-1 outline-none"
+          value={editingValue}
+          onChange={(e) => setEditingValue(e.target.value)}
+          onBlur={() => onSaveEdit(editingValue)}
+          onKeyDown={(e) => e.key === 'Enter' && onSaveEdit(editingValue)}
+        />
+      ) : (
+        <h3 
+          className="text-zinc-100 font-semibold text-sm mb-1 cursor-text hover:text-indigo-400"
+          onClick={onStartEdit}
+        >
+          {task.title}
+        </h3>
+      )}
       <p className="text-zinc-500 text-xs mb-4 leading-relaxed">{task.description || ''}</p>
 
       {task.tags && task.tags.length > 0 && (
@@ -133,7 +200,13 @@ const Column = ({
   count,
   onMoveTask,
   onDeleteTask,
-  onEditTask
+  onEditTask,
+  editingTaskId,
+  onStartEditTask,
+  onSaveEditTask,
+  onPriorityChangeTask,
+  editingTitle,
+  setEditingTitle
 }: { 
   title: string; 
   status: Status;
@@ -143,6 +216,12 @@ const Column = ({
   onMoveTask: (id: number, dir: 'left' | 'right') => void;
   onDeleteTask: (id: number) => void;
   onEditTask: (task: Task) => void;
+  editingTaskId: number | null;
+  onStartEditTask: (id: number, currentTitle: string) => void;
+  onSaveEditTask: (id: number, newTitle: string) => void;
+  onPriorityChangeTask: (id: number, p: Priority) => void;
+  editingTitle: string;
+  setEditingTitle: (v: string) => void;
 }) => {
   return (
     <div className="flex flex-col gap-4">
@@ -157,7 +236,19 @@ const Column = ({
       {/* Task List */}
       <div className="flex flex-col gap-3 h-full">
         {tasks.map(task => (
-          <TaskCard key={task.id} task={task} onMove={onMoveTask} onDelete={onDeleteTask} onEdit={onEditTask} />
+          <TaskCard 
+            key={task.id} 
+            task={task} 
+            onMove={onMoveTask} 
+            onDelete={onDeleteTask} 
+            onEdit={onEditTask}
+            isEditing={editingTaskId === task.id}
+            onStartEdit={() => onStartEditTask(task.id, task.title)}
+            onSaveEdit={(newVal) => onSaveEditTask(task.id, newVal)}
+            editingValue={editingTitle}
+            setEditingValue={setEditingTitle}
+            onPriorityChange={onPriorityChangeTask}
+          />
         ))}
         {tasks.length === 0 && (
           <div className="h-32 rounded-xl border border-dashed border-zinc-800 flex items-center justify-center text-zinc-600 text-xs">
@@ -171,15 +262,65 @@ const Column = ({
 
 export default function Kanban() {
   const { user, fetchWithAuth } = useAuth();
-  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const teamFilter = searchParams.get('teamId');
   
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [teams, setTeams] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [taskToEdit, setTaskToEdit] = useState<Task | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isBackendOffline, setIsBackendOffline] = useState(false);
+
+  // Form State for new tasks
+  const [newTask, setNewTask] = useState({ 
+    title: '', 
+    team_id: teamFilter ? Number(teamFilter) : null as number | null, 
+    priority: 'MEDIUM' as Priority,
+    assignee_id: null as number | null,
+    due_date: ''
+  });
   
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState('');
+
+  const handleClearFilter = () => {
+    setSearchParams({});
+    // After clearing search params, the teamFilter will be null, 
+    // and useEffect will trigger fetchTasks() which will get all permitted tasks.
+  };
+
+  const handleInPlaceUpdate = async (id: number, newTitle: string) => {
+    if (!newTitle.trim()) {
+      setEditingTaskId(null);
+      return;
+    }
+    try {
+      await fetchWithAuth(`/api/kanban/tasks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ title: newTitle })
+      });
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, title: newTitle } : t));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setEditingTaskId(null);
+    }
+  };
+
+  const handlePriorityChange = async (id: number, newPriority: Priority) => {
+    try {
+      await fetchWithAuth(`/api/kanban/tasks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ priority: newPriority })
+      });
+      setTasks(prev => prev.map(t => t.id === id ? { ...t, priority: newPriority } : t));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Fetch tasks from API
   const fetchTasks = async () => {
     try {
@@ -187,7 +328,11 @@ export default function Kanban() {
       const response = await fetchWithAuth(url);
       if (!response.ok) throw new Error('Failed');
       const data = await response.json();
+      
+      // Always display all tasks returned by the backend
+      // The backend already handles security/filtering for the specific user
       setTasks(data);
+      
       setIsBackendOffline(false);
     } catch (error) {
       console.log("Offline mode active");
@@ -197,9 +342,36 @@ export default function Kanban() {
     }
   };
 
+  // Fetch teams for the filter display
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const response = await fetchWithAuth('/api/teams');
+        if (response.ok) {
+          const data = await response.json();
+          setTeams(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch teams:", err);
+      }
+    };
+    fetchTeams();
+  }, [fetchWithAuth]);
+
   useEffect(() => {
     fetchTasks();
   }, [fetchWithAuth, teamFilter]);
+
+  const activeTeamName = teamFilter ? teams.find(t => String(t.id) === String(teamFilter))?.title : null;
+
+  // Sync newTask team_id when filter changes
+  useEffect(() => {
+    if (teamFilter) {
+      setNewTask(prev => ({ ...prev, team_id: Number(teamFilter) }));
+    } else {
+      setNewTask(prev => ({ ...prev, team_id: null }));
+    }
+  }, [teamFilter]);
 
   const handleEditTask = (task: Task) => {
     setTaskToEdit(task);
@@ -270,7 +442,7 @@ export default function Kanban() {
               <h1 className="text-2xl font-bold text-white mb-1">Kanban Board</h1>
               {teamFilter && (
                 <span className="px-2 py-0.5 bg-indigo-900/30 border border-indigo-500/30 text-indigo-400 text-[10px] font-bold rounded-md uppercase tracking-wider">
-                  Team Filter Active
+                  {activeTeamName || 'Team Filter Active'}
                 </span>
               )}
             </div>
@@ -280,8 +452,8 @@ export default function Kanban() {
               </p>
               {teamFilter && (
                 <button 
-                  onClick={() => navigate('/kanban')}
-                  className="text-indigo-400 hover:text-indigo-300 text-xs font-medium underline"
+                  onClick={handleClearFilter}
+                  className="text-indigo-400 hover:text-indigo-300 text-xs font-medium underline cursor-pointer"
                 >
                   Clear Filter
                 </button>
@@ -314,6 +486,12 @@ export default function Kanban() {
             onMoveTask={moveTask}
             onDeleteTask={deleteTask}
             onEditTask={handleEditTask}
+            editingTaskId={editingTaskId}
+            onStartEditTask={(id, title) => { setEditingTaskId(id); setEditingTitle(title); }}
+            onSaveEditTask={handleInPlaceUpdate}
+            onPriorityChangeTask={handlePriorityChange}
+            editingTitle={editingTitle}
+            setEditingTitle={setEditingTitle}
           />
 
           {/* In Progress Column */}
@@ -326,6 +504,12 @@ export default function Kanban() {
             onMoveTask={moveTask}
             onDeleteTask={deleteTask}
             onEditTask={handleEditTask}
+            editingTaskId={editingTaskId}
+            onStartEditTask={(id, title) => { setEditingTaskId(id); setEditingTitle(title); }}
+            onSaveEditTask={handleInPlaceUpdate}
+            onPriorityChangeTask={handlePriorityChange}
+            editingTitle={editingTitle}
+            setEditingTitle={setEditingTitle}
           />
 
           {/* Done Column */}
@@ -338,6 +522,12 @@ export default function Kanban() {
             onMoveTask={moveTask}
             onDeleteTask={deleteTask}
             onEditTask={handleEditTask}
+            editingTaskId={editingTaskId}
+            onStartEditTask={(id, title) => { setEditingTaskId(id); setEditingTitle(title); }}
+            onSaveEditTask={handleInPlaceUpdate}
+            onPriorityChangeTask={handlePriorityChange}
+            editingTitle={editingTitle}
+            setEditingTitle={setEditingTitle}
           />
 
         </div>
@@ -347,9 +537,9 @@ export default function Kanban() {
         isOpen={isModalOpen} 
         onClose={handleModalClose} 
         onTaskUpdated={fetchTasks} 
-        taskToEdit={taskToEdit} 
+        taskToEdit={taskToEdit}
+        defaultTeamId={teamFilter ? Number(teamFilter) : null}
       />
     </div>
   );
 }
-

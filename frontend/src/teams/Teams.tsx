@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, ArrowRight, X, Trash2, UserPlus, Shield } from 'lucide-react';
+import { Plus, ArrowRight, X, Trash2, UserPlus, Shield, Users as UsersIcon } from 'lucide-react';
 import { useAuth } from '../portal/Context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -16,6 +16,7 @@ interface Team {
   description: string;
   color: string;
   members: Member[];
+  user_team_role?: string;
 }
 
 export default function Teams() {
@@ -24,6 +25,7 @@ export default function Teams() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
+  const [isMembersListModalOpen, setIsMembersListModalOpen] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -41,9 +43,7 @@ export default function Teams() {
 
   // Helper to check if current user is admin/owner of a team
   const isTeamAdmin = (team: Team) => {
-    if (!user) return false;
-    const membership = team.members.find(m => m.id === user.id);
-    return membership && (membership.role === 'admin' || membership.role === 'owner');
+    return team.user_team_role === 'admin' || team.user_team_role === 'owner';
   };
 
   // Fetch teams from API
@@ -129,6 +129,32 @@ export default function Teams() {
     }
   };
 
+  // REMOVE MEMBER
+  const handleRemoveMember = async (userId: number) => {
+    if (!selectedTeam) return;
+    if (!confirm("Remove this member from the team?")) return;
+
+    try {
+      const response = await fetchWithAuth(`/api/teams/${selectedTeam.id}/members/${userId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        fetchTeams();
+        // Update local state for the modal
+        setSelectedTeam({
+          ...selectedTeam,
+          members: selectedTeam.members.filter(m => m.id !== userId)
+        });
+      } else {
+        const data = await response.json();
+        alert(data.message || 'Failed to remove member');
+      }
+    } catch (error) {
+      console.error('Failed to remove member:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#09090b] text-zinc-100 font-sans p-6 md:p-8 flex items-center justify-center">
@@ -164,15 +190,6 @@ export default function Teams() {
                 <h2 className="text-xl font-bold text-white mb-1 group-hover:text-purple-100 transition-colors">{team.title}</h2>
                 <div className="flex gap-2">
                   {isTeamAdmin(team) && (
-                    <button 
-                      onClick={() => { setSelectedTeam(team); setIsMemberModalOpen(true); }}
-                      className="text-zinc-600 hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Add Member"
-                    >
-                      <UserPlus size={16}/>
-                    </button>
-                  )}
-                  {isTeamAdmin(team) && (
                     <button onClick={() => handleDelete(team.id)} className="text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Team">
                       <Trash2 size={16}/>
                     </button>
@@ -181,23 +198,22 @@ export default function Teams() {
               </div>
               <p className="text-zinc-500 text-sm mb-6 line-clamp-2">{team.description}</p>
 
-              <div className="mb-4">
-                <p className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2">Members ({team.members?.length || 0})</p>
-                <div className="flex flex-wrap gap-2">
-                  {team.members && team.members.length > 0 ? (
-                    team.members.map((member, i) => (
-                      <div key={i} className="flex items-center gap-1.5 px-2 py-1 bg-zinc-900 border border-zinc-800 rounded-md">
-                        <div className="w-5 h-5 rounded-full bg-indigo-900/50 flex items-center justify-center text-[8px] font-bold text-indigo-300 border border-indigo-700/50">
-                          {member.name.substring(0, 2).toUpperCase()}
-                        </div>
-                        <span className="text-[10px] text-zinc-300 font-medium">{member.name}</span>
-                        {(member.role === 'owner' || member.role === 'admin') && <Shield size={10} className="text-amber-500" />}
-                      </div>
-                    ))
-                  ) : (
-                    <span className="text-zinc-600 text-[10px]">No members yet</span>
-                  )}
-                </div>
+              <div className="flex flex-col gap-3 mb-6">
+                <button 
+                  onClick={() => { setSelectedTeam(team); setIsMembersListModalOpen(true); }}
+                  className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 rounded-lg text-xs font-semibold border border-zinc-800 transition-all flex items-center justify-center gap-2"
+                >
+                  <UsersIcon size={14} /> View Members ({team.members?.length || 0})
+                </button>
+                
+                {isTeamAdmin(team) && (
+                  <button 
+                    onClick={() => { setSelectedTeam(team); setIsMemberModalOpen(true); }}
+                    className="w-full py-2 bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 rounded-lg text-xs font-semibold border border-indigo-500/20 transition-all flex items-center justify-center gap-2"
+                  >
+                    <UserPlus size={14} /> Add Member
+                  </button>
+                )}
               </div>
 
               <div className="mt-4 pt-4 border-t border-zinc-800/50 flex justify-between items-center">
@@ -302,6 +318,66 @@ export default function Teams() {
 
                 <button onClick={handleAddMember} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg mt-2 transition-colors">
                   Add to Team
+                </button>
+              </div>
+           </div>
+        </div>
+      )}
+
+      {/* MEMBERS LIST MODAL */}
+      {isMembersListModalOpen && selectedTeam && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+           <div className="bg-[#141414] border border-zinc-800 w-full max-w-md rounded-xl p-6 relative">
+              <button 
+                onClick={() => setIsMembersListModalOpen(false)} 
+                className="absolute top-4 right-4 text-zinc-500 hover:text-white"
+              >
+                <X size={20}/>
+              </button>
+              
+              <h2 className="text-xl font-bold mb-2 text-white">Team Members</h2>
+              <p className="text-zinc-500 text-xs mb-6">Managing members for <strong>{selectedTeam.title}</strong></p>
+              
+              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                {selectedTeam.members.map((member) => (
+                  <div key={member.id} className="flex items-center justify-between p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-xs font-bold text-indigo-400">
+                        {(member.name || '??').substring(0, 2).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">{member.name}</p>
+                        <p className="text-[10px] text-zinc-500 truncate">{member.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-tighter ${
+                        member.role === 'owner' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 
+                        member.role === 'admin' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 
+                        'bg-zinc-800 text-zinc-500 border border-zinc-700'
+                      }`}>
+                        {member.role}
+                      </span>
+                      {isTeamAdmin(selectedTeam) && member.id !== user?.id && member.role !== 'owner' && (
+                        <button 
+                          onClick={() => handleRemoveMember(member.id)}
+                          className="p-1.5 hover:bg-red-950/30 text-zinc-600 hover:text-red-400 rounded-md transition-colors"
+                          title="Remove Member"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 pt-6 border-t border-zinc-800">
+                <button 
+                  onClick={() => { setIsMembersListModalOpen(false); setIsMemberModalOpen(true); }}
+                  className="w-full py-2.5 bg-white text-black hover:bg-zinc-200 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  <UserPlus size={16} /> Add New Member
                 </button>
               </div>
            </div>

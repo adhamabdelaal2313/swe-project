@@ -18,30 +18,41 @@ const taskSchema = Joi.object({
 // GET: Fetch all tasks with optional filters
 const getAllTasks = async (req, res) => {
     try {
+        const userId = req.user.id;
+        const userRole = req.user.role;
         const { team_id, assignee_id, status } = req.query;
+        
         let sql = `
             SELECT t.*, u.name as assignee_name, tm.team_name 
             FROM tasks t
             LEFT JOIN users u ON t.assignee_id = u.id
             LEFT JOIN teams tm ON t.team_id = tm.team_id
-            WHERE 1=1
         `;
+        
+        let whereConditions = ["1=1"];
         const params = [];
 
+        // Security: If not admin, restrict to user's teams or assigned tasks
+        if (userRole !== 'admin') {
+            sql += ` LEFT JOIN team_members tm2 ON t.team_id = tm2.team_id AND tm2.user_id = ? `;
+            whereConditions.push("(tm2.id IS NOT NULL OR t.assignee_id = ? OR t.team_id IS NULL)");
+            params.push(userId, userId);
+        }
+
         if (team_id) {
-            sql += " AND t.team_id = ?";
+            whereConditions.push("t.team_id = ?");
             params.push(team_id);
         }
         if (assignee_id) {
-            sql += " AND t.assignee_id = ?";
+            whereConditions.push("t.assignee_id = ?");
             params.push(assignee_id);
         }
         if (status) {
-            sql += " AND t.status = ?";
+            whereConditions.push("t.status = ?");
             params.push(status);
         }
 
-        sql += " ORDER BY t.created_at DESC";
+        sql += ` WHERE ${whereConditions.join(" AND ")} ORDER BY t.created_at DESC`;
 
         const [tasks] = await db.query(sql, params);
         

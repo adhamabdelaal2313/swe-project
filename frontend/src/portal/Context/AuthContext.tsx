@@ -8,11 +8,16 @@ interface User {
   role?: string;
 }
 
+interface AuthResponse {
+  success: boolean;
+  message?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<AuthResponse>;
+  register: (name: string, email: string, password: string) => Promise<AuthResponse>;
   logout: () => void;
   isAuthenticated: boolean;
   isAuthReady: boolean;
@@ -28,17 +33,45 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     // Check for stored user session
-    const storedUser = localStorage.getItem('teamflow_user');
-    const storedToken = localStorage.getItem('teamflow_token');
-    
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
-    }
-    setIsAuthReady(true);
+    const initializeAuth = async () => {
+      const storedUser = localStorage.getItem('teamflow_user');
+      const storedToken = localStorage.getItem('teamflow_token');
+      
+      if (storedUser && storedToken) {
+        // Set initial state from storage
+        setUser(JSON.parse(storedUser));
+        setToken(storedToken);
+
+        try {
+          // Verify and sync with database
+          const response = await fetch('/api/portal/refresh', {
+            headers: { 'Authorization': `Bearer ${storedToken}` }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setUser(data.user);
+            setToken(data.token);
+            localStorage.setItem('teamflow_user', JSON.stringify(data.user));
+            localStorage.setItem('teamflow_token', data.token);
+          } else if (response.status === 401) {
+            // Token expired or invalid, clear session
+            localStorage.removeItem('teamflow_user');
+            localStorage.removeItem('teamflow_token');
+            setUser(null);
+            setToken(null);
+          }
+        } catch (error) {
+          console.error('Auth sync error:', error);
+        }
+      }
+      setIsAuthReady(true);
+    };
+
+    initializeAuth();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<AuthResponse> => {
     try {
       const response = await fetch('/api/portal/login', {
         method: 'POST',
@@ -46,22 +79,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         body: JSON.stringify({ email, password })
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
         setUser(data.user);
         setToken(data.token);
         localStorage.setItem('teamflow_user', JSON.stringify(data.user));
         localStorage.setItem('teamflow_token', data.token);
-        return true;
+        return { success: true };
       }
-      return false;
+      return { success: false, message: data.message || 'Login failed' };
     } catch (error) {
       console.error('Login error:', error);
-      return false;
+      return { success: false, message: 'Could not connect to server' };
     }
   };
 
-  const register = async (name: string, email: string, password: string): Promise<boolean> => {
+  const register = async (name: string, email: string, password: string): Promise<AuthResponse> => {
     try {
       const response = await fetch('/api/portal/register', {
         method: 'POST',
@@ -69,18 +103,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         body: JSON.stringify({ name, email, password })
       });
 
+      const data = await response.json();
+
       if (response.ok) {
-        const data = await response.json();
         setUser(data.user);
         setToken(data.token);
         localStorage.setItem('teamflow_user', JSON.stringify(data.user));
         localStorage.setItem('teamflow_token', data.token);
-        return true;
+        return { success: true };
       }
-      return false;
+      return { success: false, message: data.message || 'Registration failed' };
     } catch (error) {
       console.error('Registration error:', error);
-      return false;
+      return { success: false, message: 'Could not connect to server' };
     }
   };
 
