@@ -63,11 +63,11 @@ export default function CreateTaskModal({ isOpen, onClose, onTaskCreated }: Crea
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-zinc-200 dark:border-zinc-700 w-full max-w-md relative shadow-2xl">
-         <div className="flex justify-between items-center mb-6">
-            <h2 className="text-zinc-900 dark:text-white text-xl font-bold">Create New Task</h2>
-            <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-white transition-colors"><X size={24} /></button>
+    <div className="fixed inset-0 bg-black/60 dark:bg-black/80 flex items-center justify-center z-50 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+      <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 rounded-xl border border-zinc-200 dark:border-zinc-700 w-full max-w-md relative shadow-2xl my-auto">
+         <div className="flex justify-between items-center mb-4 sm:mb-6">
+            <h2 className="text-zinc-900 dark:text-white text-lg sm:text-xl font-bold">Create New Task</h2>
+            <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-white transition-colors touch-manipulation p-1"><X size={20} className="sm:w-6 sm:h-6" /></button>
          </div>
         
         <form onSubmit={handleSubmit} className="space-y-4">

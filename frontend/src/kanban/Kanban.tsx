@@ -110,7 +110,7 @@ const TaskCard = ({
   onPriorityChange: (id: number, p: Priority) => void;
 }) => {
   return (
-    <div className="group relative bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800/80 rounded-2xl p-5 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 dark:shadow-none hover:-translate-y-1">
+    <div className="group relative bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800/80 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-indigo-500/5 dark:shadow-none hover:-translate-y-1">
       {/* Top progress indicator or accent */}
       <div className={`absolute top-0 left-0 right-0 h-1 rounded-t-2xl opacity-40 group-hover:opacity-100 transition-opacity ${
         task.status === 'DONE' ? 'bg-emerald-500' : task.status === 'IN_PROGRESS' ? 'bg-indigo-500' : 'bg-zinc-300 dark:bg-zinc-700'
@@ -237,17 +237,17 @@ const Column = ({
   setEditingTitle: (v: string) => void;
 }) => {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3 sm:gap-4 min-w-[260px] sm:min-w-0">
       {/* Column Header */}
-      <div className={`flex justify-between items-center p-4 rounded-xl border ${colorClass} bg-white/50 dark:bg-[#141414]/50 backdrop-blur-sm shadow-sm dark:shadow-none`}>
-        <h2 className="text-zinc-900 dark:text-zinc-100 font-bold text-sm tracking-wide uppercase">{title}</h2>
-        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-xs font-medium">
+      <div className={`flex justify-between items-center p-3 sm:p-4 rounded-lg sm:rounded-xl border ${colorClass} bg-white/50 dark:bg-[#141414]/50 backdrop-blur-sm shadow-sm dark:shadow-none`}>
+        <h2 className="text-zinc-900 dark:text-zinc-100 font-bold text-xs sm:text-sm tracking-wide uppercase">{title}</h2>
+        <span className="flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 text-[10px] sm:text-xs font-medium">
           {count}
         </span>
       </div>
 
       {/* Task List */}
-      <div className="flex flex-col gap-3 h-full">
+      <div className="flex flex-col gap-2 sm:gap-3 h-full">
         {tasks.map(task => (
           <TaskCard 
             key={task.id} 
@@ -264,7 +264,7 @@ const Column = ({
           />
         ))}
         {tasks.length === 0 && (
-          <div className="h-32 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-xs">
+          <div className="h-24 sm:h-32 rounded-lg sm:rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-[10px] sm:text-xs">
             No tasks
           </div>
         )}
@@ -421,27 +421,27 @@ export default function Kanban() {
   const getTasksByStatus = (status: Status) => tasks.filter(t => t.status === status);
 
   return (
-    <div className="w-full min-h-screen font-sans">
+    <div className="w-full min-h-screen font-sans p-3 sm:p-4 md:p-6">
       
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-1">Kanban Board</h1>
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-10 px-3 sm:px-0">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+              <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">Kanban Board</h1>
               {teamFilter && (
-                <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold rounded-md uppercase tracking-wider">
+                <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-[9px] sm:text-[10px] font-bold rounded-md uppercase tracking-wider whitespace-nowrap">
                   {activeTeamName || 'Team Filter Active'}
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-3">
-              <p className="text-zinc-500 text-sm">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
                 {isBackendOffline ? 'Offline Mode' : 'Connected to Database'}
               </p>
               {teamFilter && (
                 <button 
                   onClick={handleClearFilter}
-                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 text-xs font-medium underline cursor-pointer"
+                  className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 text-xs font-medium underline cursor-pointer whitespace-nowrap"
                 >
                   Clear Filter
                 </button>
@@ -451,18 +451,19 @@ export default function Kanban() {
         
         <button 
           onClick={handleCreateTask}
-          className="flex items-center gap-2 bg-indigo-600 dark:bg-[#2E1065] hover:bg-indigo-700 dark:hover:bg-[#3b0764] text-white dark:text-purple-100 px-5 py-2.5 rounded-lg border border-indigo-500 dark:border-purple-900/50 transition-all text-sm font-medium shadow-lg dark:shadow-[0_0_15px_-3px_rgba(88,28,135,0.3)]"
+          className="flex items-center justify-center gap-2 bg-indigo-600 dark:bg-[#2E1065] hover:bg-indigo-700 dark:hover:bg-[#3b0764] text-white dark:text-purple-100 px-4 sm:px-5 py-2 sm:py-2.5 rounded-lg border border-indigo-500 dark:border-purple-900/50 transition-all text-xs sm:text-sm font-medium shadow-lg dark:shadow-[0_0_15px_-3px_rgba(88,28,135,0.3)] touch-manipulation w-full sm:w-auto"
         >
-          <Plus size={18} />
-          New Task
+          <Plus size={16} className="sm:w-[18px] sm:h-[18px]" />
+          <span>New Task</span>
         </button>
       </header>
 
-      {isLoading && <div className="text-zinc-500 text-center py-10">Loading tasks...</div>}
+      {isLoading && <div className="text-zinc-500 text-center py-8 sm:py-10 text-sm sm:text-base px-3 sm:px-0">Loading tasks...</div>}
 
-      {/* Kanban Grid */}
+      {/* Kanban Grid - Horizontal scroll on mobile */}
       {!isLoading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0 pb-4 sm:pb-0">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6 min-w-[280px] md:min-w-0">
           
           {/* To Do Column */}
           <Column 
@@ -518,6 +519,7 @@ export default function Kanban() {
             setEditingTitle={setEditingTitle}
           />
 
+          </div>
         </div>
       )}
 

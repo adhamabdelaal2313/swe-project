@@ -186,24 +186,24 @@ const TaskList = () => {
   return (
     <div className="w-full min-h-screen font-sans">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white mb-1">Tasks</h1>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">Tasks</h1>
             {teamFilter && (
-              <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold rounded-md uppercase tracking-wider">
+              <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-500/30 text-indigo-600 dark:text-indigo-400 text-[9px] sm:text-[10px] font-bold rounded-md uppercase tracking-wider whitespace-nowrap">
                 {activeTeamName || 'Team Filter Active'}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <p className="text-zinc-500 dark:text-zinc-400 text-sm">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
               Browse, search, and manage all tasks across your teams.
             </p>
             {teamFilter && (
               <button 
                 onClick={() => setSearchParams({})}
-                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-xs font-medium underline cursor-pointer"
+                className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-xs font-medium underline cursor-pointer whitespace-nowrap"
               >
                 Clear Filter
               </button>
@@ -211,8 +211,8 @@ const TaskList = () => {
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
-          <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full md:w-auto">
+          <div className="relative flex-1 min-w-0">
             <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-zinc-500 text-sm">
               🔍
             </span>
@@ -221,13 +221,13 @@ const TaskList = () => {
               placeholder="Search tasks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-800 rounded-lg pl-9 pr-3 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm dark:shadow-none transition-colors"
+              className="w-full bg-white dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-800 rounded-lg pl-9 pr-3 py-2 sm:py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm dark:shadow-none transition-colors"
             />
           </div>
 
           <button
             onClick={handleCreateClick}
-            className="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 transition-colors whitespace-nowrap"
+            className="inline-flex items-center justify-center px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 transition-colors whitespace-nowrap touch-manipulation"
           >
             + New Task
           </button>
@@ -235,7 +235,7 @@ const TaskList = () => {
       </div>
 
       {/* FILTERS */}
-      <div className="flex flex-wrap items-center gap-2 mb-4 border-b border-zinc-200 dark:border-zinc-800 pb-3 text-xs md:text-sm">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4 border-b border-zinc-200 dark:border-zinc-800 pb-2 sm:pb-3 text-[10px] sm:text-xs md:text-sm overflow-x-auto -mx-3 sm:-mx-0 px-3 sm:px-0">
         <button
           type="button"
           onClick={() => setStatusFilter('ALL')}
@@ -283,8 +283,9 @@ const TaskList = () => {
       </div>
 
       {/* TABLE */}
-      <div className="bg-white dark:bg-[#111114] border border-zinc-200 dark:border-zinc-800/70 rounded-2xl shadow-xl dark:shadow-black/40 transition-all duration-300">
-        <div className="hidden md:flex items-center px-6 py-4 bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em] rounded-t-2xl relative">
+      <div className="bg-white dark:bg-[#111114] border border-zinc-200 dark:border-zinc-800/70 rounded-xl sm:rounded-2xl shadow-xl dark:shadow-black/40 transition-all duration-300 overflow-hidden">
+        {/* Desktop Table Header */}
+        <div className="hidden md:flex items-center px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em] relative">
           <div className="absolute bottom-0 left-0 h-[2px] w-12 bg-indigo-500 rounded-full" />
           <div className="flex-[1.5]">Task Details</div>
           <div className="flex-[1.5]">Description</div>
@@ -292,6 +293,18 @@ const TaskList = () => {
           <div className="flex-1">Priority</div>
           <div className="flex-1">Status</div>
           <div className="flex-1 text-right">Actions</div>
+        </div>
+        
+        {/* Mobile Table Header - Horizontal Scroll Container */}
+        <div className="md:hidden overflow-x-auto">
+          <div className="min-w-[600px] flex items-center px-4 py-3 bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em]">
+            <div className="flex-[1.5] min-w-[120px]">Task Details</div>
+            <div className="flex-[1.5] min-w-[120px]">Description</div>
+            <div className="flex-1 min-w-[80px]">Team</div>
+            <div className="flex-1 min-w-[80px]">Priority</div>
+            <div className="flex-1 min-w-[80px]">Status</div>
+            <div className="flex-1 min-w-[80px] text-right">Actions</div>
+          </div>
         </div>
 
         {/* STATES */}
@@ -312,12 +325,185 @@ const TaskList = () => {
           </div>
         )}
 
-        {/* ROWS */}
+        {/* ROWS - Mobile Scroll Container */}
+        <div className="md:hidden overflow-x-auto">
+          {!loading &&
+            filteredTasks.map((task, idx) => (
+              <div
+                key={task.id}
+                className={`group border-t border-zinc-100 dark:border-zinc-800/80 px-3 sm:px-4 py-4 sm:py-5 min-w-[600px] flex items-center gap-3 sm:gap-4 bg-white dark:bg-[#111114] hover:bg-indigo-50/30 dark:hover:bg-indigo-500/[0.02] transition-all duration-200 ${
+                  idx === filteredTasks.length - 1 ? 'rounded-b-xl sm:rounded-b-2xl' : ''
+                } relative ${activeDropdown?.id === task.id ? 'z-50' : 'z-auto'}`}
+              >
+                <div className="flex-[1.5] min-w-[120px] relative">
+                {activeDropdown?.id === task.id && activeDropdown.field === 'title' ? (
+                  <input
+                    autoFocus
+                    className="bg-white dark:bg-zinc-950 border-2 border-indigo-500 rounded-lg px-3 py-1.5 text-sm text-zinc-900 dark:text-white w-full outline-none shadow-lg shadow-indigo-500/10"
+                    value={task.title}
+                    onChange={(e) => {
+                      const newVal = e.target.value;
+                      setTasks(prev => prev.map(t => t.id === task.id ? { ...t, title: newVal } : t));
+                    }}
+                    onBlur={() => handleInPlaceUpdate(task.id, 'title', task.title)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleInPlaceUpdate(task.id, 'title', task.title)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <p 
+                    className="text-sm font-bold text-zinc-900 dark:text-zinc-100 cursor-text group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveDropdown({ id: task.id, field: 'title' });
+                    }}
+                  >
+                    {task.title}
+                  </p>
+                )}
+                <div className="flex items-center gap-2 mt-1.5">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[8px] text-white font-black shadow-sm">
+                    {(task.assignee_name || 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+                    {task.assignee_name || 'Unassigned'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex-[1.5] relative">
+                {activeDropdown?.id === task.id && activeDropdown.field === 'description' ? (
+                  <textarea
+                    autoFocus
+                    className="bg-white dark:bg-zinc-950 border-2 border-indigo-500 rounded-lg px-3 py-2 text-xs text-zinc-900 dark:text-white w-full outline-none resize-none shadow-lg shadow-indigo-500/10"
+                    rows={2}
+                    value={task.description || ''}
+                    onChange={(e) => {
+                      const newVal = e.target.value;
+                      setTasks(prev => prev.map(t => t.id === task.id ? { ...t, description: newVal } : t));
+                    }}
+                    onBlur={() => handleInPlaceUpdate(task.id, 'description', task.description)}
+                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleInPlaceUpdate(task.id, 'description', task.description)}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <p 
+                    className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 cursor-text transition-colors leading-relaxed"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveDropdown({ id: task.id, field: 'description' });
+                    }}
+                  >
+                    {task.description || <span className="text-zinc-400 dark:text-zinc-600 italic font-medium">Add description...</span>}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex-1">
+                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2 py-1 rounded-md uppercase tracking-[0.05em] border border-indigo-100 dark:border-indigo-500/20">
+                  {task.team_name || 'General'}
+                </span>
+              </div>
+
+              <div className="flex-1 relative">
+                <div 
+                  className={`cursor-pointer hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                    task.priority === 'HIGH' ? 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30' :
+                    task.priority === 'MEDIUM' ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30' :
+                    'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30'
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveDropdown(activeDropdown?.id === task.id && activeDropdown.field === 'priority' ? null : { id: task.id, field: 'priority' });
+                  }}
+                >
+                  <div className={`w-1.5 h-1.5 rounded-full ${
+                    task.priority === 'HIGH' ? 'bg-red-500 animate-pulse' : 
+                    task.priority === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500'
+                  }`} />
+                  {task.priority}
+                  <span className="text-[8px] opacity-40">▼</span>
+                </div>
+                
+                {activeDropdown?.id === task.id && activeDropdown.field === 'priority' && (
+                  <div className="absolute top-full left-0 mt-2 w-36 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[200] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+                    {['LOW', 'MEDIUM', 'HIGH'].map(p => (
+                      <button
+                        key={p}
+                        onClick={() => handleInPlaceUpdate(task.id, 'priority', p)}
+                        className={`w-full text-left px-4 py-2.5 text-[10px] font-black uppercase tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 ${
+                          p === 'HIGH' ? 'text-red-600 dark:text-red-400' : p === 'MEDIUM' ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+                        } ${task.priority === p ? 'bg-zinc-100 dark:bg-zinc-800/50' : ''}`}
+                      >
+                        <div className={`w-1.5 h-1.5 rounded-full ${p === 'HIGH' ? 'bg-red-500' : p === 'MEDIUM' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                        {p}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 relative">
+                <div 
+                  className={`${getStatusBadgeClass(task.status)} cursor-pointer hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-2 px-3 py-1.5 uppercase tracking-tighter rounded-xl !border-2`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveDropdown(activeDropdown?.id === task.id && activeDropdown.field === 'status' ? null : { id: task.id, field: 'status' });
+                  }}
+                >
+                  <div className={`w-1.5 h-1.5 rounded-full ${
+                    task.status === 'DONE' ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 
+                    task.status === 'IN_PROGRESS' ? 'bg-blue-500 shadow-[0_0_8px_#3b82f6]' : 'bg-zinc-400'
+                  }`} />
+                  {task.status ? task.status.replace('_', ' ') : 'TODO'}
+                  <span className="text-[8px] opacity-40">▼</span>
+                </div>
+
+                {activeDropdown?.id === task.id && activeDropdown.field === 'status' && (
+                  <div className="absolute top-full left-0 mt-2 w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[200] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+                    {['TODO', 'IN_PROGRESS', 'DONE'].map(s => (
+                      <button
+                        key={s}
+                        onClick={() => handleInPlaceUpdate(task.id, 'status', s)}
+                        className={`w-full text-left px-4 py-3 text-[10px] font-black uppercase tracking-wider hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-3 border-none rounded-none ${
+                          s === 'DONE' ? 'text-emerald-600 dark:text-emerald-400' : s === 'IN_PROGRESS' ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-600 dark:text-zinc-400'
+                        } ${task.status === s ? 'bg-zinc-100 dark:bg-zinc-800/50' : ''}`}
+                      >
+                        <div className={`w-2 h-2 rounded-full ${
+                          s === 'TODO' ? 'bg-zinc-400' : s === 'IN_PROGRESS' ? 'bg-blue-400' : 'bg-emerald-400'
+                        }`} />
+                        {s.replace('_', ' ')}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-1 flex justify-end gap-2 min-w-[100px]">
+                <button
+                  onClick={() => handleEditClick(task)}
+                  className="p-1.5 sm:p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border border-zinc-200 dark:border-zinc-700 hover:border-indigo-200 dark:hover:border-indigo-500/30 shadow-sm touch-manipulation"
+                  title="Edit Task"
+                >
+                  <Edit2 size={12} className="sm:w-[14px] sm:h-[14px]" />
+                </button>
+                <button
+                  onClick={() => handleDelete(task.id)}
+                  className="p-1.5 sm:p-2 rounded-lg bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 transition-all border border-red-100 dark:border-red-900/30 shadow-sm touch-manipulation"
+                  title="Delete Task"
+                >
+                  <Trash2 size={12} className="sm:w-[14px] sm:h-[14px]" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop ROWS */}
         {!loading &&
           filteredTasks.map((task, idx) => (
             <div
-              key={task.id}
-              className={`group border-t border-zinc-100 dark:border-zinc-800/80 px-4 md:px-6 py-5 flex flex-col md:flex-row md:items-center gap-4 bg-white dark:bg-[#111114] hover:bg-indigo-50/30 dark:hover:bg-indigo-500/[0.02] transition-all duration-200 ${
+              key={`desktop-${task.id}`}
+              className={`hidden md:flex group border-t border-zinc-100 dark:border-zinc-800/80 px-4 lg:px-6 py-4 lg:py-5 items-center gap-4 bg-white dark:bg-[#111114] hover:bg-indigo-50/30 dark:hover:bg-indigo-500/[0.02] transition-all duration-200 ${
                 idx === filteredTasks.length - 1 ? 'rounded-b-2xl' : ''
               } relative ${activeDropdown?.id === task.id ? 'z-50' : 'z-auto'}`}
             >
@@ -464,7 +650,7 @@ const TaskList = () => {
                 )}
               </div>
 
-              <div className="flex-1 flex md:justify-end gap-2">
+              <div className="flex-1 flex justify-end gap-2">
                 <button
                   onClick={() => handleEditClick(task)}
                   className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all border border-zinc-200 dark:border-zinc-700 hover:border-indigo-200 dark:hover:border-indigo-500/30 shadow-sm"

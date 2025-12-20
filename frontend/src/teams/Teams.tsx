@@ -164,83 +164,83 @@ export default function Teams() {
   }
 
   return (
-    <div className="w-full min-h-screen font-sans relative overflow-hidden">
+    <div className="w-full min-h-screen font-sans relative overflow-hidden p-4 sm:p-6 md:p-8">
       {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 blur-[120px] -z-10 pointer-events-none rounded-full" />
+      <div className="absolute top-0 right-0 w-[300px] sm:w-[400px] md:w-[500px] h-[300px] sm:h-[400px] md:h-[500px] bg-indigo-500/5 blur-[120px] -z-10 pointer-events-none rounded-full" />
 
       {/* HEADER */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-          <div>
-            <h1 className="text-4xl font-black text-zinc-900 dark:text-white mb-2 tracking-tight">Teams</h1>
-            <p className="text-zinc-500 dark:text-zinc-400 font-medium">Collaborate and manage your team members effortlessly.</p>
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-12">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-zinc-900 dark:text-white mb-1 sm:mb-2 tracking-tight">Teams</h1>
+            <p className="text-xs sm:text-sm md:text-base text-zinc-500 dark:text-zinc-400 font-medium">Collaborate and manage your team members effortlessly.</p>
         </div>
         
-        <button onClick={() => setIsModalOpen(true)} className="group bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-2xl text-sm font-black border border-indigo-500 shadow-lg shadow-indigo-500/25 flex items-center gap-3 transition-all hover:scale-[1.02] active:scale-95 uppercase tracking-wider">
-          <div className="w-6 h-6 rounded-lg bg-white/20 flex items-center justify-center group-hover:rotate-90 transition-transform">
-            <Plus size={16} strokeWidth={3} />
+        <button onClick={() => setIsModalOpen(true)} className="group bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-black border border-indigo-500 shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 sm:gap-3 transition-all hover:scale-[1.02] active:scale-95 uppercase tracking-wider touch-manipulation w-full sm:w-auto">
+          <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg bg-white/20 flex items-center justify-center group-hover:rotate-90 transition-transform">
+            <Plus size={14} className="sm:w-[16px] sm:h-[16px]" strokeWidth={3} />
           </div>
-          New Team
+          <span>New Team</span>
         </button>
       </header>
 
       {/* TEAMS GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
         {teams.map((team) => (
-          <div key={team.id} className="group relative bg-white dark:bg-[#121212] border border-zinc-200 dark:border-zinc-800/60 rounded-[2.5rem] p-8 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-zinc-50 dark:hover:bg-[#161616] transition-all duration-500 shadow-xl shadow-zinc-200/50 dark:shadow-none hover:-translate-y-2">
+          <div key={team.id} className="group relative bg-white dark:bg-[#121212] border border-zinc-200 dark:border-zinc-800/60 rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-6 md:p-8 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-zinc-50 dark:hover:bg-[#161616] transition-all duration-500 shadow-xl shadow-zinc-200/50 dark:shadow-none hover:-translate-y-1 sm:hover:-translate-y-2">
             {/* Color accent bar */}
-            <div className={`absolute left-8 top-10 bottom-10 w-1.5 rounded-full ${team.color || 'bg-indigo-500'} opacity-40 group-hover:opacity-100 transition-opacity`}></div>
+            <div className={`absolute left-4 sm:left-6 md:left-8 top-6 sm:top-8 md:top-10 bottom-6 sm:bottom-8 md:bottom-10 w-1 sm:w-1.5 rounded-full ${team.color || 'bg-indigo-500'} opacity-40 group-hover:opacity-100 transition-opacity`}></div>
 
-            <div className="pl-6">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-black text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight">{team.title}</h2>
-                <div className="flex gap-2">
+            <div className="pl-4 sm:pl-6">
+              <div className="flex justify-between items-start mb-3 sm:mb-4">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-black text-zinc-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors leading-tight pr-2 break-words">{team.title}</h2>
+                <div className="flex gap-1 sm:gap-2 shrink-0">
                   {isTeamAdmin(team) && (
-                    <button onClick={() => handleDelete(team.id)} className="p-2 bg-red-50 dark:bg-red-950/20 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all rounded-xl border border-red-100 dark:border-red-900/30" title="Delete Team">
-                      <Trash2 size={16}/>
+                    <button onClick={() => handleDelete(team.id)} className="p-1.5 sm:p-2 bg-red-50 dark:bg-red-950/20 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-all rounded-lg sm:rounded-xl border border-red-100 dark:border-red-900/30 touch-manipulation" title="Delete Team">
+                      <Trash2 size={14} className="sm:w-[16px] sm:h-[16px]"/>
                     </button>
                   )}
                 </div>
               </div>
-              <p className="text-zinc-500 dark:text-zinc-400 text-sm mb-8 line-clamp-2 leading-relaxed font-medium">{team.description}</p>
+              <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mb-4 sm:mb-6 md:mb-8 line-clamp-2 leading-relaxed font-medium">{team.description}</p>
 
-              <div className="grid grid-cols-2 gap-3 mb-8">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6 md:mb-8">
                 <button 
                   onClick={() => { setSelectedTeam(team); setIsMembersListModalOpen(true); }}
-                  className="py-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-2xl text-[10px] font-black uppercase tracking-wider border border-zinc-200 dark:border-zinc-800 transition-all flex items-center justify-center gap-2"
+                  className="py-2 sm:py-3 bg-zinc-100 dark:bg-zinc-900 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider border border-zinc-200 dark:border-zinc-800 transition-all flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation"
                 >
-                  <UsersIcon size={14} /> {team.members?.length || 0} Members
+                  <UsersIcon size={12} className="sm:w-[14px] sm:h-[14px]" /> <span className="whitespace-nowrap">{team.members?.length || 0} Members</span>
                 </button>
                 
                 {isTeamAdmin(team) ? (
                   <button 
                     onClick={() => { setSelectedTeam(team); setIsMemberModalOpen(true); }}
-                    className="py-3 bg-indigo-50 dark:bg-indigo-600/10 hover:bg-indigo-100 dark:hover:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 rounded-2xl text-[10px] font-black uppercase tracking-wider border border-indigo-100 dark:border-indigo-500/20 transition-all flex items-center justify-center gap-2"
+                    className="py-2 sm:py-3 bg-indigo-50 dark:bg-indigo-600/10 hover:bg-indigo-100 dark:hover:bg-indigo-600/20 text-indigo-600 dark:text-indigo-400 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider border border-indigo-100 dark:border-indigo-500/20 transition-all flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation"
                   >
-                    <UserPlus size={14} /> Invite
+                    <UserPlus size={12} className="sm:w-[14px] sm:h-[14px]" /> <span>Invite</span>
                   </button>
                 ) : (
-                  <div className="py-3 bg-zinc-50 dark:bg-zinc-900/30 text-zinc-400 rounded-2xl text-[10px] font-black uppercase tracking-wider border border-transparent flex items-center justify-center gap-2 opacity-50">
-                    Member
+                  <div className="py-2 sm:py-3 bg-zinc-50 dark:bg-zinc-900/30 text-zinc-400 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-wider border border-transparent flex items-center justify-center gap-1.5 sm:gap-2 opacity-50">
+                    <span>Member</span>
                   </div>
                 )}
               </div>
 
-              <div className="mt-auto pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex justify-between items-center">
+              <div className="mt-auto pt-4 sm:pt-6 border-t border-zinc-100 dark:border-zinc-800/50 flex justify-between items-center gap-2">
                  <button 
                     onClick={() => navigate(`/kanban?teamId=${team.id}`)}
-                    className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-2 group/btn"
+                    className="text-[10px] sm:text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 sm:gap-2 group/btn touch-manipulation whitespace-nowrap"
                  >
                     View Board 
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight size={12} className="sm:w-[14px] sm:h-[14px] group-hover/btn:translate-x-1 transition-transform" />
                  </button>
-                 <div className="flex -space-x-2">
+                 <div className="flex -space-x-1.5 sm:-space-x-2 shrink-0">
                     {team.members?.slice(0, 3).map((m, i) => (
-                      <div key={i} className="w-7 h-7 rounded-full border-2 border-white dark:border-zinc-900 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[8px] text-white font-black shadow-sm">
-                        {m.name.charAt(0).toUpperCase()}
+                      <div key={i} className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white dark:border-zinc-900 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-[7px] sm:text-[8px] text-white font-black shadow-sm">
+                        {(m.name || 'U').charAt(0).toUpperCase()}
                       </div>
                     ))}
                     {(team.members?.length || 0) > 3 && (
-                      <div className="w-7 h-7 rounded-full border-2 border-white dark:border-zinc-900 bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-[8px] text-zinc-500 font-black">
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 border-white dark:border-zinc-900 bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-[7px] sm:text-[8px] text-zinc-500 font-black">
                         +{(team.members?.length || 0) - 3}
                       </div>
                     )}

@@ -130,10 +130,31 @@ npm run build
 #### Vercel (Frontend)
 ---
 
-## 🧪 Testing Strategy
+## 🧪 Testing
 
-The project includes a comprehensive suite of tests to ensure stability:
-- **Backend (Jest/Supertest):** Tests API endpoints, database interactions, and authentication middleware.
-- **Frontend (Vitest/RTL):** Tests component rendering, user interactions, and state management.
+The project includes example tests demonstrating unit, integration, and system testing approaches:
+- **Unit Tests**: Component functions, utilities, and validation schemas
+- **Integration Tests**: API endpoints with mocked database
+- **System Tests**: End-to-end user flows
 
-To run all tests: `npm run test` (from root).
+To run tests:
+```bash
+# Frontend tests
+cd frontend && npm test
+
+# Backend tests
+cd backend && npm test
+
+# All tests
+npm run test
+```
+
+## 📚 Documentation
+
+Comprehensive documentation is available in [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md), covering:
+- Architecture overview and design patterns
+- Complete API reference
+- Database schema documentation
+- Authentication and security details
+- Development and deployment guides
+- Troubleshooting and best practices

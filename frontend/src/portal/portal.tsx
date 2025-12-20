@@ -33,24 +33,24 @@ export default function Portal() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#09090b] p-5">
-      <div className="w-full max-w-[420px] bg-zinc-900 border-2 border-indigo-500/50 rounded-2xl p-10 shadow-2xl shadow-indigo-500/20 relative">
+    <div className="min-h-screen flex items-center justify-center bg-[#09090b] p-4 sm:p-5">
+      <div className="w-full max-w-[420px] bg-zinc-900 border-2 border-indigo-500/50 rounded-xl sm:rounded-2xl p-6 sm:p-8 md:p-10 shadow-2xl shadow-indigo-500/20 relative mx-4 sm:mx-0">
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 blur-xl opacity-50 -z-10"></div>
         <div className="absolute inset-[2px] rounded-2xl bg-zinc-900 -z-10"></div>
         
-        <div className="text-center mb-8 relative z-10">
-          <div className="flex flex-col items-center mb-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-16 h-16 rounded-xl flex items-center justify-center bg-zinc-800/30 border border-zinc-700/50 overflow-hidden">
-                <img src="/TF-Logo.png" alt="TeamFlow Logo" className="w-full h-full object-contain p-2" />
+        <div className="text-center mb-6 sm:mb-8 relative z-10">
+          <div className="flex flex-col items-center mb-3 sm:mb-4">
+            <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl flex items-center justify-center bg-zinc-800/30 border border-zinc-700/50 overflow-hidden">
+                <img src="/TF-Logo.png" alt="TeamFlow Logo" className="w-full h-full object-contain p-1.5 sm:p-2" />
               </div>
-              <h1 className="text-3xl font-bold text-white">TeamFlow</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">TeamFlow</h1>
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-white mb-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
-          <p className="text-zinc-400 text-sm">
+          <p className="text-zinc-400 text-xs sm:text-sm px-2">
             {isLogin ? 'Sign in to continue to TeamFlow' : 'Join TeamFlow and start collaborating'}
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function Portal() {
           <button 
             type="submit" 
             disabled={isLoading}
-            className="bg-indigo-600 hover:bg-indigo-500 border border-indigo-700 rounded-lg px-6 py-3 text-white text-sm font-semibold cursor-pointer mt-2 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-60"
+            className="bg-indigo-600 hover:bg-indigo-500 border border-indigo-700 rounded-lg px-5 sm:px-6 py-2.5 sm:py-3 text-white text-xs sm:text-sm font-semibold cursor-pointer mt-2 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-60 w-full touch-manipulation"
           >
             {isLoading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
           </button>

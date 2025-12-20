@@ -145,17 +145,17 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto"
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 w-full max-w-lg rounded-2xl p-6 relative shadow-2xl"
+        className="bg-white dark:bg-[#141414] border border-zinc-200 dark:border-zinc-800 w-full max-w-lg rounded-xl sm:rounded-2xl p-4 sm:p-6 relative shadow-2xl my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
           disabled={loading}
-          className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-xl transition-colors"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 text-zinc-400 hover:text-zinc-600 dark:hover:text-white text-lg sm:text-xl transition-colors touch-manipulation p-1"
         >
           &times;
         </button>
