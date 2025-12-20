@@ -69,7 +69,22 @@ describe('Task Management System Flow', () => {
     expect(fetchRes.body[0].title).toBe('System Test Task');
 
     // Step 3: Update task status (move to IN_PROGRESS)
-    db.query.mockResolvedValueOnce([{ affectedRows: 1 }, []]);
+    // Mock: Security check query (SELECT with EXISTS), then UPDATE, then logActivity
+    // MySQL2 returns [rows, fields], so mock should return [rows, fields]
+    const mockTaskForUpdate = {
+      id: taskId,
+      title: 'System Test Task',
+      status: 'TODO',
+      priority: 'MEDIUM',
+      team_id: null,
+      assignee_id: userId, // Task is assigned to the user, so they can update it
+      is_team_member: 0, // 0 = false (not a team task)
+    };
+    
+    db.query
+      .mockResolvedValueOnce([[mockTaskForUpdate], []]) // Security check query
+      .mockResolvedValueOnce([{ affectedRows: 1 }, []]) // UPDATE query
+      .mockResolvedValueOnce([{}, []]); // logActivity query
 
     const updateRes = await request(app)
       .put(`/api/tasks/${taskId}`)
@@ -79,7 +94,21 @@ describe('Task Management System Flow', () => {
     expect(updateRes.statusCode).toBe(200);
 
     // Step 4: Move task via Kanban endpoint
-    db.query.mockResolvedValueOnce([{ affectedRows: 1 }, []]);
+    // Mock: Security check query, then UPDATE, then logActivity
+    const mockTaskForKanban = {
+      id: taskId,
+      title: 'System Test Task',
+      status: 'IN_PROGRESS',
+      priority: 'MEDIUM',
+      team_id: null,
+      assignee_id: userId,
+      is_team_member: 0,
+    };
+    
+    db.query
+      .mockResolvedValueOnce([[mockTaskForKanban], []]) // Security check query
+      .mockResolvedValueOnce([{ affectedRows: 1 }, []]) // UPDATE query
+      .mockResolvedValueOnce([{}, []]); // logActivity query
 
     const kanbanRes = await request(app)
       .put(`/api/kanban/tasks/${taskId}`)
@@ -89,7 +118,21 @@ describe('Task Management System Flow', () => {
     expect(kanbanRes.statusCode).toBe(200);
 
     // Step 5: Delete the task
-    db.query.mockResolvedValueOnce([{ affectedRows: 1 }, []]);
+    // Mock: Security check query, then DELETE, then logActivity
+    const mockTaskForDelete = {
+      id: taskId,
+      title: 'System Test Task',
+      status: 'DONE',
+      priority: 'MEDIUM',
+      team_id: null,
+      assignee_id: userId,
+      is_team_member: 0,
+    };
+    
+    db.query
+      .mockResolvedValueOnce([[mockTaskForDelete], []]) // Security check query
+      .mockResolvedValueOnce([{ affectedRows: 1 }, []]) // DELETE query
+      .mockResolvedValueOnce([{}, []]); // logActivity query
 
     const deleteRes = await request(app)
       .delete(`/api/tasks/${taskId}`)

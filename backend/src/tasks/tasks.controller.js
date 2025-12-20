@@ -178,7 +178,6 @@ const updateTask = async (req, res) => {
             return res.status(404).json({ message: `Task with ID ${taskId} not found.` });
         }
 
-        const userId = req.user ? req.user.id : null;
         const userName = req.user ? req.user.name : null;
         await logActivity(`Updated task ${taskId}`, userId, userName);
 
@@ -227,7 +226,6 @@ const deleteTask = async (req, res) => {
             return res.status(404).json({ message: `Task with ID ${taskId} not found.` });
         }
 
-        const userId = req.user ? req.user.id : null;
         const userName = req.user ? req.user.name : null;
         await logActivity(`Deleted task ${taskId}`, userId, userName);
 
