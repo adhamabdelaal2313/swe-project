@@ -2,6 +2,8 @@
 
 TeamFlow is a modern, collaborative project management tool built with a focus on simplicity, security, and developer productivity. It follows a **Feature-First Architecture** to ensure the codebase remains clean, scalable, and easy to maintain.
 
+Prod Link: https://swe-project-indol.vercel.app/
+
 ---
 
 ## 🚀 Core Features
@@ -132,7 +134,11 @@ npm run build
 ```
 
 ### 2. Deployment Platforms (Railway, Render, etc.)
-- **Railway:** Connect your GitHub repo. Railway will automatically detect the root `package.json`, run the build, and start the server.
+- **Railway:** 
+  - Connect your GitHub repo to Railway
+  - Railway will use the `nixpacks.toml` configuration to build and deploy
+  - Ensure you have a MySQL database service connected
+  - Set environment variables: `DATABASE_URL`, `JWT_SECRET`, and `PORT` (usually auto-set)
 - **Render:** Create a new **Web Service**, connect your repo, and use `npm run build` as the build command and `npm start` as the start command.
 
 ### 3. Required Environment Variables
