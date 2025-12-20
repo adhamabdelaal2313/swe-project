@@ -18,33 +18,63 @@ require('./config/db.config.js');
 const app = express();
 
 // Configure CORS to allow requests from Vercel frontend
+const getAllowedOrigins = () => {
+  if (process.env.FRONTEND_URL) {
+    // Support multiple origins separated by commas, remove trailing slashes
+    const origins = process.env.FRONTEND_URL.split(',')
+      .map(url => url.trim().replace(/\/$/, '')); // Remove trailing slashes
+    console.log(`[CORS] Allowed origins configured: ${origins.join(', ')}`);
+    return origins;
+  }
+  // In development or if FRONTEND_URL not set, allow all origins
+  console.log('[CORS] FRONTEND_URL not set, allowing all origins');
+  return '*';
+};
+
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    const allowedOrigins = getAllowedOrigins();
     
-    const allowedOrigins = process.env.FRONTEND_URL 
-      ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
-      : ['*'];
+    // Allow requests with no origin (like mobile apps, Postman, or same-origin requests)
+    if (!origin) {
+      console.log('[CORS] Request with no origin, allowing');
+      return callback(null, true);
+    }
     
-    // In production, check against allowed origins
-    if (process.env.NODE_ENV === 'production' && process.env.FRONTEND_URL) {
-      if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log(`[CORS] Blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
-        callback(new Error('Not allowed by CORS'));
-      }
-    } else {
-      // In development, allow all origins
+    console.log(`[CORS] Request from origin: ${origin}`);
+    
+    // If allowedOrigins is '*', allow all
+    if (allowedOrigins === '*' || (Array.isArray(allowedOrigins) && allowedOrigins.includes('*'))) {
+      console.log('[CORS] Allowing all origins');
+      return callback(null, true);
+    }
+    
+    // Check if origin is in allowed list
+    if (Array.isArray(allowedOrigins) && allowedOrigins.includes(origin)) {
+      console.log(`[CORS] Origin ${origin} is allowed`);
       callback(null, true);
+    } else {
+      console.log(`[CORS] ❌ Blocked origin: ${origin}`);
+      console.log(`[CORS] Allowed origins: ${Array.isArray(allowedOrigins) ? allowedOrigins.join(', ') : allowedOrigins}`);
+      callback(new Error('Not allowed by CORS'));
     }
   },
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 app.use(cors(corsOptions)); // Enable CORS for all routes
 app.use(express.json()); // Allows Express to read JSON data from requests
+
+// Health check endpoint (for Railway/Render deployment monitoring)
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
 
 // 3. Serve API routes
 app.use('/api/portal', portalRoutes);
