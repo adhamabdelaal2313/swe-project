@@ -16,7 +16,14 @@ require('./config/db.config.js');
 
 // 2. Start the Express server part
 const app = express();
-app.use(cors()); // Enable CORS for all routes
+
+// Configure CORS to allow requests from Vercel frontend
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || '*', // Allow all origins in development, specific URL in production
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions)); // Enable CORS for all routes
 app.use(express.json()); // Allows Express to read JSON data from requests
 
 // 3. Serve API routes

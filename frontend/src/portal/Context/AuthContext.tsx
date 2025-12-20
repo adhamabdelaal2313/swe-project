@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { apiUrl } from '../../config/api';
 
 interface User {
   id: number;
@@ -44,7 +45,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         try {
           // Verify and sync with database
-          const response = await fetch('/api/portal/refresh', {
+          const response = await fetch(apiUrl('/api/portal/refresh'), {
             headers: { 'Authorization': `Bearer ${storedToken}` }
           });
 
@@ -73,7 +74,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string): Promise<AuthResponse> => {
     try {
-      const response = await fetch('/api/portal/login', {
+      const response = await fetch(apiUrl('/api/portal/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -97,7 +98,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const register = async (name: string, email: string, password: string): Promise<AuthResponse> => {
     try {
-      const response = await fetch('/api/portal/register', {
+      const response = await fetch(apiUrl('/api/portal/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })
@@ -121,7 +122,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = async () => {
     try {
-      await fetch('/api/portal/logout', {
+      await fetch(apiUrl('/api/portal/logout'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -145,7 +146,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
     };
-    return fetch(url, { ...options, headers });
+    // Use apiUrl helper to ensure correct base URL in production
+    const fullUrl = url.startsWith('http') ? url : apiUrl(url);
+    return fetch(fullUrl, { ...options, headers });
   };
 
   return (

@@ -133,19 +133,27 @@ The project is configured so the Backend serves the Frontend. To build the entir
 npm run build
 ```
 
-### 2. Deployment Platforms (Railway, Render, etc.)
-- **Railway:** 
-  - Connect your GitHub repo to Railway
-  - Railway will use the `nixpacks.toml` configuration to build and deploy
-  - Ensure you have a MySQL database service connected
-  - Set environment variables: `DATABASE_URL`, `JWT_SECRET`, and `PORT` (usually auto-set)
-- **Render:** Create a new **Web Service**, connect your repo, and use `npm run build` as the build command and `npm start` as the start command.
+### 2. Deployment Platforms
 
-### 3. Required Environment Variables
-Ensure the following are set in your production environment:
-- `DATABASE_URL`: Your MySQL connection string (e.g., `mysql://user:pass@host:port/db`).
-- `JWT_SECRET`: A long, random string for securing sessions.
-- `PORT`: Usually provided automatically by the platform (defaults to 3000).
+#### Railway (Backend)
+- Connect your GitHub repo to Railway
+- Railway will use the `nixpacks.toml` configuration to build and deploy
+- Ensure you have a MySQL database service connected
+- Set environment variables:
+  - `DATABASE_URL`: Your MySQL connection string (e.g., `mysql://user:pass@host:port/db`)
+  - `JWT_SECRET`: A long, random string for securing sessions
+  - `PORT`: Usually provided automatically by Railway (defaults to 3000)
+  - `FRONTEND_URL`: Your Vercel frontend URL (e.g., `https://your-app.vercel.app`) for CORS
+
+#### Vercel (Frontend)
+- Connect your GitHub repo to Vercel
+- Vercel will use the `vercel.json` configuration
+- Set environment variables:
+  - `VITE_API_URL`: Your Railway backend URL (e.g., `https://your-app.railway.app`)
+- **Important:** After deployment, update the `FRONTEND_URL` in Railway to match your Vercel URL
+
+#### Render (Alternative)
+Create a new **Web Service**, connect your repo, and use `npm run build` as the build command and `npm start` as the start command.
 
 ---
 
