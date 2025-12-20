@@ -93,16 +93,7 @@ cd backend && npm install
 cd ../frontend && npm install
 ```
 
-### 2. Database Configuration
-1. Import `backend/DB/schema.sql` into your MySQL server.
-2. Create a `.env` file in the `backend` folder:
-   ```env
-   DATABASE_URL=mysql://root:password@localhost:3306/teamflow_project
-   JWT_SECRET=your_super_secret_key
-   PORT=5000
-   ```
-
-### 3. Running the Project
+### 2. Running the Project
 ```bash
 # Run Backend (from /backend)
 npm run dev
@@ -111,7 +102,7 @@ npm run dev
 npm run dev
 ```
 
-### 4. Running Tests
+### 3. Running Tests
 ```bash
 # Backend Tests
 cd backend && npm test
@@ -135,25 +126,8 @@ npm run build
 ### 2. Deployment Platforms
 
 #### Railway (Backend)
-- Connect your GitHub repo to Railway
-- Railway will use the `nixpacks.toml` configuration to build and deploy
-- Ensure you have a MySQL database service connected
-- Set environment variables:
-  - `DATABASE_URL`: Your MySQL connection string (e.g., `mysql://user:pass@host:port/db`)
-  - `JWT_SECRET`: A long, random string for securing sessions
-  - `PORT`: Usually provided automatically by Railway (defaults to 3000)
-  - `FRONTEND_URL`: Your Vercel frontend URL (e.g., `https://your-app.vercel.app`) for CORS
 
 #### Vercel (Frontend)
-- Connect your GitHub repo to Vercel
-- Vercel will use the `vercel.json` configuration
-- Set environment variables:
-  - `VITE_API_URL`: Your Railway backend URL (e.g., `https://your-app.railway.app`)
-- **Important:** After deployment, update the `FRONTEND_URL` in Railway to match your Vercel URL
-
-#### Render (Alternative)
-Create a new **Web Service**, connect your repo, and use `npm run build` as the build command and `npm start` as the start command.
-
 ---
 
 ## 🧪 Testing Strategy
