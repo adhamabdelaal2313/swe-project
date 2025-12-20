@@ -61,29 +61,41 @@ classDiagram
 Shows the interactions between different users and the system.
 
 ```mermaid
-useCaseDiagram
-    actor "Registered User" as U
-    actor "Admin User" as A
+graph TB
+    subgraph TeamFlow["TeamFlow System"]
+        UC1["Login / Register"]
+        UC2["Create Task"]
+        UC3["Update Task"]
+        UC4["Delete Task"]
+        UC5["View Task List"]
+        UC6["Manage Kanban Board"]
+        UC7["Create Team"]
+        UC8["Add Team Members"]
+        UC9["Remove Team Members"]
+        UC10["View Analytics<br/>(Dashboard/Activities)"]
+        UC11["Delete Any Task"]
+    end
 
-    package TeamFlow {
-        usecase "Login / Register" as UC1
-        usecase "Create Task" as UC2
-        usecase "Manage Kanban Board" as UC3
-        usecase "Create Team" as UC4
-        usecase "Add Team Members" as UC5
-        usecase "View Analytics" as UC6
-        usecase "Delete Any Task" as UC7
-    }
+    User["User"]
+    Admin["Admin"]
 
-    U --> UC1
-    U --> UC2
-    U --> UC3
-    U --> UC4
-    U --> UC5
-    U --> UC6
+    User --> UC1
+    User --> UC2
+    User --> UC3
+    User --> UC4
+    User --> UC5
+    User --> UC6
+    User --> UC7
+    User --> UC8
+    User --> UC9
+    User --> UC10
 
-    A --> UC7
-    A --|> U    
+    Admin --> UC11
+    Admin -.->|extends| User
+
+    style UC11 fill:#ff6b6b
+    style User fill:#4ecdc4
+    style Admin fill:#95e1d3
 ```
 
 ## 3. Sequence Diagram: Authentication Flow

@@ -129,7 +129,7 @@ export default function Portal() {
                 <p className={/[A-Z]/.test(password) ? 'text-emerald-500' : 'text-zinc-500'}>• At least one uppercase letter</p>
                 <p className={/[a-z]/.test(password) ? 'text-emerald-500' : 'text-zinc-500'}>• At least one lowercase letter</p>
                 <p className={/\d/.test(password) ? 'text-emerald-500' : 'text-zinc-500'}>• At least one number</p>
-                <p className={/[@$!%*?&]/.test(password) ? 'text-emerald-500' : 'text-zinc-500'}>• At least one special character (@$!%*?&)</p>
+                <p className={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]/.test(password) ? 'text-emerald-500' : 'text-zinc-500'}>• At least one special character</p>
               </div>
             )}
           </div>

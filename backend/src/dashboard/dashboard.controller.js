@@ -68,7 +68,10 @@ const getDashboardStats = async (req, res) => {
 // --- GET: Recent Activity ---
 const getRecentActivity = async (req, res) => {
   try {
-    const [rows] = await db.query(`
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    let sql = `
       SELECT 
         a.id,
         a.action,
@@ -79,9 +82,20 @@ const getRecentActivity = async (req, res) => {
         u.email as user_email
       FROM activities a
       LEFT JOIN users u ON a.user_id = u.id
-      ORDER BY a.created_at DESC 
-      LIMIT 5
-    `);
+    `;
+    
+    const params = [];
+    
+    // Security: Regular users can only see their own activities
+    // Admins can see all activities
+    if (userRole !== 'admin') {
+      sql += ' WHERE a.user_id = ?';
+      params.push(userId);
+    }
+    
+    sql += ' ORDER BY a.created_at DESC LIMIT 5';
+    
+    const [rows] = await db.query(sql, params);
     
     // Use user_name from activities table if available, otherwise use joined user name
     const formattedRows = rows.map(row => ({

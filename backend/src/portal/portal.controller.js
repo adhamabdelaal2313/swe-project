@@ -7,7 +7,9 @@ const Joi = require('joi');
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key';
 
 // Password complexity regex: 1 upper, 1 lower, 1 digit, 1 special, min 8 chars
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+// Allows all printable ASCII special characters including spaces, #, ^, ", ', etc.
+// Note: - must be escaped or at end of character class
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~` ]{8,}$/;
 
 const registerSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),

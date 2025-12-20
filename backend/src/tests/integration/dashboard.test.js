@@ -37,23 +37,19 @@ describe('Dashboard API Integration', () => {
     expect(res.body).toHaveProperty('completed', 7);
   });
 
-  it('should fetch recent activity feed', async () => {
+  it('should fetch recent activity feed for regular user (only their own activities)', async () => {
     const mockActivities = [
       {
         id: 1,
         action: 'User logged in',
-        user_name: 'John Doe',
+        user_id: 1, // Same as mockToken user ID
+        user_name: 'Test User',
         created_at: '2024-01-15 10:00:00',
-      },
-      {
-        id: 2,
-        action: 'Task created',
-        user_name: 'Jane Smith',
-        created_at: '2024-01-15 09:30:00',
       },
     ];
 
     // MySQL2 returns [rows, fields], so mock should return [rows, fields]
+    // Regular user should only see their own activities (filtered by user_id = 1)
     db.query.mockResolvedValueOnce([mockActivities, []]); // Activity feed query returns [rows, fields]
 
     const res = await request(app)
@@ -62,9 +58,44 @@ describe('Dashboard API Integration', () => {
 
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBe(2);
+    expect(res.body.length).toBe(1);
     expect(res.body[0]).toHaveProperty('action');
     expect(res.body[0]).toHaveProperty('user_name');
+    expect(res.body[0].user_id).toBe(1); // Should only see own activities
+  });
+
+  it('should fetch all activities for admin user', async () => {
+    // Create admin token
+    const adminToken = jwt.sign({ id: 999, name: 'Admin User', email: 'admin@example.com', role: 'admin' }, JWT_SECRET);
+    
+    const mockActivities = [
+      {
+        id: 1,
+        action: 'User logged in',
+        user_id: 1,
+        user_name: 'Test User',
+        created_at: '2024-01-15 10:00:00',
+      },
+      {
+        id: 2,
+        action: 'Task created',
+        user_id: 2,
+        user_name: 'Jane Smith',
+        created_at: '2024-01-15 09:30:00',
+      },
+    ];
+
+    // Admin should see all activities (no WHERE clause)
+    db.query.mockResolvedValueOnce([mockActivities, []]);
+
+    const res = await request(app)
+      .get('/api/dashboard/activity')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.length).toBe(2); // Admin sees all activities
+    expect(res.body[0]).toHaveProperty('action');
   });
 
   it('should require authentication for dashboard endpoints', async () => {
