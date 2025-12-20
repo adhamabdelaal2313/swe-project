@@ -55,12 +55,20 @@ export default function Sidebar() {
           <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity flex-shrink-0">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-500/20 shadow-sm overflow-hidden p-2">
               <img 
-                src="/TF-Logo.png" 
+                src="/TF-Logo.png"
                 alt="TeamFlow Logo" 
                 className="w-full h-full object-contain"
                 onError={(e) => {
+                  // Fallback if image fails to load - show text logo instead
                   const target = e.target as HTMLImageElement;
-                  target.style.opacity = '0.3';
+                  target.style.display = 'none';
+                  const parent = target.parentElement;
+                  if (parent && !parent.querySelector('.fallback-logo')) {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'fallback-logo text-indigo-600 dark:text-indigo-400 text-lg font-black';
+                    fallback.textContent = 'TF';
+                    parent.appendChild(fallback);
+                  }
                 }}
               />
             </div>

@@ -12,6 +12,18 @@ export default defineConfig({
       }
     }
   },
+  // Ensure public assets are properly handled
+  publicDir: 'public',
+  build: {
+    // Ensure static assets are copied correctly
+    assetsDir: 'assets',
+    rollupOptions: {
+      output: {
+        // Preserve asset file names
+        assetFileNames: 'assets/[name].[ext]'
+      }
+    }
+  },
   test: {
     globals: true,
     environment: 'jsdom',
