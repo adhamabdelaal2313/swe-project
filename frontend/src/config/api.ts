@@ -5,7 +5,8 @@
 const getApiBaseUrl = (): string => {
   // Check if we're in production and have a VITE_API_URL set
   if (import.meta.env.PROD && import.meta.env.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL;
+    // Remove trailing slash if present
+    return import.meta.env.VITE_API_URL.replace(/\/$/, '');
   }
   
   // In development or when VITE_API_URL is not set, use relative URLs

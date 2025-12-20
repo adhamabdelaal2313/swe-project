@@ -92,7 +92,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return { success: false, message: data.message || 'Login failed' };
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false, message: 'Could not connect to server' };
+      // Provide more helpful error message
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+        return { 
+          success: false, 
+          message: 'Could not connect to server. Please check your internet connection and ensure the backend is running.' 
+        };
+      }
+      return { success: false, message: `Connection error: ${errorMessage}` };
     }
   };
 
@@ -116,7 +124,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return { success: false, message: data.message || 'Registration failed' };
     } catch (error) {
       console.error('Registration error:', error);
-      return { success: false, message: 'Could not connect to server' };
+      // Provide more helpful error message
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+        return { 
+          success: false, 
+          message: 'Could not connect to server. Please check your internet connection and ensure the backend is running.' 
+        };
+      }
+      return { success: false, message: `Connection error: ${errorMessage}` };
     }
   };
 
