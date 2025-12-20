@@ -11,8 +11,12 @@ const getDashboardStats = async (req, res) => {
     let params = [];
     
     if (userRole !== 'admin') {
+      // Users can only see:
+      // 1. Tasks from teams they're members of (tm.id IS NOT NULL)
+      // 2. Tasks assigned to them (t.assignee_id = userId)
+      // Private tasks (team_id IS NULL) are only visible if assigned to the user
       baseSql += ' LEFT JOIN team_members tm ON t.team_id = tm.team_id AND tm.user_id = ?';
-      baseSql += ' WHERE (tm.id IS NOT NULL OR t.assignee_id = ? OR t.team_id IS NULL)';
+      baseSql += ' WHERE (tm.id IS NOT NULL OR t.assignee_id = ?)';
       params.push(userId, userId);
     }
 
