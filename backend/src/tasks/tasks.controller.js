@@ -35,11 +35,20 @@ const getAllTasks = async (req, res) => {
         // Security: If not admin, restrict to user's teams or assigned tasks
         if (userRole !== 'admin') {
             sql += ` LEFT JOIN team_members tm2 ON t.team_id = tm2.team_id AND tm2.user_id = ? `;
-            whereConditions.push("(tm2.id IS NOT NULL OR t.assignee_id = ? OR t.team_id IS NULL)");
+            // Users can only see:
+            // 1. Tasks from teams they're members of (tm2.id IS NOT NULL)
+            // 2. Tasks assigned to them (t.assignee_id = userId)
+            // Private tasks (team_id IS NULL) are only visible if assigned to the user
+            whereConditions.push("(tm2.id IS NOT NULL OR t.assignee_id = ?)");
             params.push(userId, userId);
         }
 
-        if (team_id) {
+        // Additional security: If filtering by team_id, ensure user is a member (unless admin)
+        if (team_id && userRole !== 'admin') {
+            // Verify user is a member of this team
+            whereConditions.push("EXISTS (SELECT 1 FROM team_members tm3 WHERE tm3.team_id = ? AND tm3.user_id = ?)");
+            params.push(team_id, userId);
+        } else if (team_id) {
             whereConditions.push("t.team_id = ?");
             params.push(team_id);
         }
@@ -107,6 +116,33 @@ const createTask = async (req, res) => {
 const updateTask = async (req, res) => {
     const taskId = req.params.id;
     try {
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        // Security: Check if user has access to this task
+        if (userRole !== 'admin') {
+            const [taskCheck] = await db.query(`
+                SELECT t.*, 
+                       EXISTS(SELECT 1 FROM team_members tm WHERE tm.team_id = t.team_id AND tm.user_id = ?) as is_team_member
+                FROM tasks t
+                WHERE t.id = ?
+            `, [userId, taskId]);
+
+            if (taskCheck.length === 0) {
+                return res.status(404).json({ message: `Task with ID ${taskId} not found.` });
+            }
+
+            const task = taskCheck[0];
+            // User can only update tasks:
+            // 1. From teams they're members of, OR
+            // 2. Assigned to them
+            const canUpdate = task.is_team_member || task.assignee_id === userId;
+            
+            if (!canUpdate) {
+                return res.status(403).json({ message: 'You do not have permission to update this task.' });
+            }
+        }
+
         const { error, value } = taskSchema.fork(
             ['title', 'description', 'status', 'priority', 'team_id', 'assignee_id', 'tags', 'due_date', 'is_completed'], 
             (schema) => schema.optional()
@@ -157,6 +193,33 @@ const updateTask = async (req, res) => {
 const deleteTask = async (req, res) => {
     const taskId = req.params.id; 
     try {
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        // Security: Check if user has access to this task
+        if (userRole !== 'admin') {
+            const [taskCheck] = await db.query(`
+                SELECT t.*, 
+                       EXISTS(SELECT 1 FROM team_members tm WHERE tm.team_id = t.team_id AND tm.user_id = ?) as is_team_member
+                FROM tasks t
+                WHERE t.id = ?
+            `, [userId, taskId]);
+
+            if (taskCheck.length === 0) {
+                return res.status(404).json({ message: `Task with ID ${taskId} not found.` });
+            }
+
+            const task = taskCheck[0];
+            // User can only delete tasks:
+            // 1. From teams they're members of, OR
+            // 2. Assigned to them
+            const canDelete = task.is_team_member || task.assignee_id === userId;
+            
+            if (!canDelete) {
+                return res.status(403).json({ message: 'You do not have permission to delete this task.' });
+            }
+        }
+
         const sql = 'DELETE FROM tasks WHERE id = ?';
         const [result] = await db.query(sql, [taskId]);
 
