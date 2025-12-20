@@ -34,12 +34,20 @@ app.use('/api/teams', teamsRoutes);
 app.use('/api/dashboard', dashboardRoutes); 
 
 // 4. Serve static files from the frontend/dist folder
-app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+// This includes favicon, images, and other assets
+app.use(express.static(path.join(__dirname, '../../frontend/dist'), {
+    maxAge: '1y', // Cache static assets for 1 year
+    etag: true,
+    lastModified: true
+}));
 
 // 5. Catch-all: serve the frontend's index.html for any non-API GET requests
+// But exclude static file requests (images, favicon, etc.)
 app.use((req, res, next) => {
-    // Only handle GET requests that are not for API routes
-    if (req.method === 'GET' && !req.path.startsWith('/api')) {
+    // Only handle GET requests that are not for API routes or static files
+    if (req.method === 'GET' && 
+        !req.path.startsWith('/api') && 
+        !req.path.match(/\.(png|jpg|jpeg|gif|ico|svg|css|js|woff|woff2|ttf|eot)$/i)) {
         return res.sendFile(path.join(__dirname, '../../frontend/dist', 'index.html'));
     }
     next();

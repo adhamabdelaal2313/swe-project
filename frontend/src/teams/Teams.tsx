@@ -65,6 +65,17 @@ export default function Teams() {
     fetchTeams();
   }, [fetchWithAuth]);
 
+  // Helper function to convert Tailwind color classes to hex colors
+  const tailwindToHex = (tailwindClass: string): string => {
+    const colorMap: Record<string, string> = {
+      'bg-purple-600': '#9333EA',
+      'bg-cyan-500': '#06b6d4',
+      'bg-pink-500': '#ec4899',
+      'bg-emerald-500': '#10b981',
+    };
+    return colorMap[tailwindClass] || '#9333EA'; // Default to purple if not found
+  };
+
   // CREATE TEAM
   const handleCreateTeam = async () => {
     if (!newTeam.title.trim()) {
@@ -78,7 +89,7 @@ export default function Teams() {
         body: JSON.stringify({
           title: newTeam.title.trim(),
           description: newTeam.description.trim(),
-          color: newTeam.color
+          color: tailwindToHex(newTeam.color) // Convert Tailwind class to hex
         })
       });
 

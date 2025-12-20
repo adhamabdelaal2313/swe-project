@@ -60,15 +60,41 @@ const getAllTeams = async (req, res) => {
   }
 };
 
+// Helper function to convert Tailwind classes to hex colors and validate
+const normalizeColor = (color) => {
+  if (!color) return '#FFFFFF';
+  
+  // If it's already a hex color, validate and return
+  if (color.startsWith('#')) {
+    // Ensure it's exactly 7 characters (#RRGGBB)
+    return color.length === 7 ? color : '#FFFFFF';
+  }
+  
+  // Convert Tailwind classes to hex colors
+  const colorMap = {
+    'bg-purple-600': '#9333EA',
+    'bg-cyan-500': '#06b6d4',
+    'bg-pink-500': '#ec4899',
+    'bg-emerald-500': '#10b981',
+  };
+  
+  return colorMap[color] || '#FFFFFF';
+};
+
 // POST: Create a new team
 const createTeam = async (req, res) => {
   try {
     const { title, name, description, color, accent_color } = req.body;
     const teamName = title || name;
-    const accentColor = color || accent_color || '#FFFFFF';
+    const accentColor = normalizeColor(color || accent_color);
 
     if (!teamName) {
       return res.status(400).json({ message: 'Team name is required' });
+    }
+
+    // Validate color length (database column is VARCHAR(7))
+    if (accentColor.length > 7) {
+      return res.status(400).json({ message: 'Invalid color format. Please use hex color (e.g., #FFFFFF)' });
     }
 
     const [result] = await db.query(
