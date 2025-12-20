@@ -104,8 +104,11 @@ describe('Task Flow Integration', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Test Task 1')).toBeInTheDocument();
-      expect(screen.getByText('Test Task 2')).toBeInTheDocument();
+      // Task appears in both desktop and mobile views, so use getAllByText
+      const task1Elements = screen.getAllByText('Test Task 1');
+      const task2Elements = screen.getAllByText('Test Task 2');
+      expect(task1Elements.length).toBeGreaterThan(0);
+      expect(task2Elements.length).toBeGreaterThan(0);
     }, { timeout: 3000 });
 
     expect(global.fetch).toHaveBeenCalled();

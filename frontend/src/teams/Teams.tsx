@@ -67,14 +67,17 @@ export default function Teams() {
 
   // CREATE TEAM
   const handleCreateTeam = async () => {
-    if (!newTeam.title) return;
+    if (!newTeam.title.trim()) {
+      alert('Please enter a team name');
+      return;
+    }
 
     try {
       const response = await fetchWithAuth('/api/teams', {
         method: 'POST',
         body: JSON.stringify({
-          title: newTeam.title,
-          description: newTeam.description,
+          title: newTeam.title.trim(),
+          description: newTeam.description.trim(),
           color: newTeam.color
         })
       });
@@ -83,9 +86,15 @@ export default function Teams() {
         fetchTeams();
         setIsModalOpen(false);
         setNewTeam({ title: '', description: '', color: 'bg-purple-600' });
+      } else {
+        // Handle error response
+        const errorData = await response.json().catch(() => ({ message: 'Failed to create team' }));
+        alert(`Failed to create team: ${errorData.message || errorData.error || 'Unknown error'}`);
+        console.error('Failed to create team:', errorData);
       }
     } catch (error) {
       console.error('Failed to create team:', error);
+      alert('Network error: Could not connect to server. Please try again.');
     }
   };
 

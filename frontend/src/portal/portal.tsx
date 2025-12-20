@@ -42,7 +42,23 @@ export default function Portal() {
           <div className="flex flex-col items-center mb-3 sm:mb-4">
             <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
               <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl flex items-center justify-center bg-zinc-800/30 border border-zinc-700/50 overflow-hidden">
-                <img src="/TF-Logo.png" alt="TeamFlow Logo" className="w-full h-full object-contain p-1.5 sm:p-2" />
+                <img 
+                  src="/TF-Logo.png" 
+                  alt="TeamFlow Logo" 
+                  className="w-full h-full object-contain p-1.5 sm:p-2"
+                  onError={(e) => {
+                    // Fallback if image fails to load - show text logo instead
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent && !parent.querySelector('.fallback-logo')) {
+                      const fallback = document.createElement('div');
+                      fallback.className = 'fallback-logo text-indigo-400 text-xl font-bold';
+                      fallback.textContent = 'TF';
+                      parent.appendChild(fallback);
+                    }
+                  }}
+                />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white">TeamFlow</h1>
             </div>

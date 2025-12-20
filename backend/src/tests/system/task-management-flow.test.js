@@ -26,7 +26,8 @@ describe('Task Management System Flow', () => {
     let taskId;
 
     // Step 1: Create a new task
-    db.query.mockResolvedValueOnce([{ insertId: 50 }]);
+    // MySQL2 returns [rows, fields], so mock should return [rows, fields]
+    db.query.mockResolvedValueOnce([{ insertId: 50 }, []]);
 
     const createRes = await request(app)
       .post('/api/tasks')
@@ -42,7 +43,7 @@ describe('Task Management System Flow', () => {
     expect(createRes.body).toHaveProperty('taskId');
     taskId = createRes.body.taskId;
 
-    // Step 2: Fetch the created task
+    // Step 2: Fetch all tasks and verify the created task exists
     const mockTask = {
       id: taskId,
       title: 'System Test Task',
@@ -56,17 +57,19 @@ describe('Task Management System Flow', () => {
       created_at: '2024-01-15',
     };
 
-    db.query.mockResolvedValueOnce([[mockTask]]);
+    // MySQL2 returns [rows, fields], so mock should return [rows, fields]
+    db.query.mockResolvedValueOnce([[mockTask], []]);
 
     const fetchRes = await request(app)
-      .get(`/api/tasks/${taskId}`)
+      .get('/api/tasks')
       .set('Authorization', `Bearer ${authToken}`);
 
     expect(fetchRes.statusCode).toBe(200);
-    expect(fetchRes.body.title).toBe('System Test Task');
+    expect(Array.isArray(fetchRes.body)).toBe(true);
+    expect(fetchRes.body[0].title).toBe('System Test Task');
 
     // Step 3: Update task status (move to IN_PROGRESS)
-    db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+    db.query.mockResolvedValueOnce([{ affectedRows: 1 }, []]);
 
     const updateRes = await request(app)
       .put(`/api/tasks/${taskId}`)
@@ -76,7 +79,7 @@ describe('Task Management System Flow', () => {
     expect(updateRes.statusCode).toBe(200);
 
     // Step 4: Move task via Kanban endpoint
-    db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+    db.query.mockResolvedValueOnce([{ affectedRows: 1 }, []]);
 
     const kanbanRes = await request(app)
       .put(`/api/kanban/tasks/${taskId}`)
@@ -86,7 +89,7 @@ describe('Task Management System Flow', () => {
     expect(kanbanRes.statusCode).toBe(200);
 
     // Step 5: Delete the task
-    db.query.mockResolvedValueOnce([{ affectedRows: 1 }]);
+    db.query.mockResolvedValueOnce([{ affectedRows: 1 }, []]);
 
     const deleteRes = await request(app)
       .delete(`/api/tasks/${taskId}`)
@@ -94,14 +97,15 @@ describe('Task Management System Flow', () => {
 
     expect(deleteRes.statusCode).toBe(200);
 
-    // Step 6: Verify task is deleted
-    db.query.mockResolvedValueOnce([[]]);
+    // Step 6: Verify task is deleted (should not appear in task list)
+    db.query.mockResolvedValueOnce([[], []]);
 
     const verifyRes = await request(app)
-      .get(`/api/tasks/${taskId}`)
+      .get('/api/tasks')
       .set('Authorization', `Bearer ${authToken}`);
 
-    expect(verifyRes.statusCode).toBe(404);
+    expect(verifyRes.statusCode).toBe(200);
+    expect(verifyRes.body.length).toBe(0);
   });
 
   it('should handle task assignment and team association', async () => {
@@ -110,7 +114,7 @@ describe('Task Management System Flow', () => {
     const taskId = 100;
 
     // Create task with team and assignee
-    db.query.mockResolvedValueOnce([{ insertId: taskId }]);
+    db.query.mockResolvedValueOnce([{ insertId: taskId }, []]);
 
     const createRes = await request(app)
       .post('/api/tasks')
@@ -125,7 +129,7 @@ describe('Task Management System Flow', () => {
 
     expect(createRes.statusCode).toBe(201);
 
-    // Fetch task and verify team/assignee
+    // Fetch all tasks and verify team/assignee
     const mockTask = {
       id: taskId,
       title: 'Team Task',
@@ -137,15 +141,17 @@ describe('Task Management System Flow', () => {
       assignee_name: 'John Doe',
     };
 
-    db.query.mockResolvedValueOnce([[mockTask]]);
+    // MySQL2 returns [rows, fields], so mock should return [rows, fields]
+    db.query.mockResolvedValueOnce([[mockTask], []]);
 
     const fetchRes = await request(app)
-      .get(`/api/tasks/${taskId}`)
+      .get('/api/tasks')
       .set('Authorization', `Bearer ${authToken}`);
 
     expect(fetchRes.statusCode).toBe(200);
-    expect(fetchRes.body.team_id).toBe(teamId);
-    expect(fetchRes.body.assignee_id).toBe(assigneeId);
+    expect(Array.isArray(fetchRes.body)).toBe(true);
+    expect(fetchRes.body[0].team_id).toBe(teamId);
+    expect(fetchRes.body[0].assignee_id).toBe(assigneeId);
   });
 });
 

@@ -8,7 +8,7 @@ jest.mock('../../config/db.config', () => ({
 }));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_jwt_key';
-const mockToken = jwt.sign({ id: 1, name: 'Test User', email: 'test@example.com' }, JWT_SECRET);
+const mockToken = jwt.sign({ id: 1, name: 'Test User', email: 'test@example.com', role: 'user' }, JWT_SECRET);
 
 // Integration Test: Dashboard API
 describe('Dashboard API Integration', () => {
@@ -17,14 +17,14 @@ describe('Dashboard API Integration', () => {
   });
 
   it('should fetch dashboard statistics', async () => {
-    const mockStats = {
-      totalTasks: 25,
-      todo: 10,
-      inProgress: 8,
-      completed: 7,
-    };
-
-    db.query.mockResolvedValueOnce([[mockStats]]);
+    // Mock: Dashboard makes multiple queries - total, todo, inProgress, done, chartData
+    // MySQL2 returns [rows, fields], so mock should return [rows, fields]
+    db.query
+      .mockResolvedValueOnce([[{ count: 25 }], []]) // Total tasks [rows, fields]
+      .mockResolvedValueOnce([[{ count: 10 }], []]) // Todo tasks
+      .mockResolvedValueOnce([[{ count: 8 }], []]) // In progress tasks
+      .mockResolvedValueOnce([[{ count: 7 }], []]) // Done tasks
+      .mockResolvedValueOnce([[], []]); // Chart data (empty for simplicity)
 
     const res = await request(app)
       .get('/api/dashboard/stats')
@@ -53,7 +53,8 @@ describe('Dashboard API Integration', () => {
       },
     ];
 
-    db.query.mockResolvedValueOnce([mockActivities]);
+    // MySQL2 returns [rows, fields], so mock should return [rows, fields]
+    db.query.mockResolvedValueOnce([mockActivities, []]); // Activity feed query returns [rows, fields]
 
     const res = await request(app)
       .get('/api/dashboard/activity')
