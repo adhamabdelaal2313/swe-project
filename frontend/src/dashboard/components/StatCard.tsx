@@ -27,7 +27,7 @@ export default function StatCard({ title, value, icon, color }: StatCardProps) {
           <p className="text-zinc-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-widest">{title}</p>
         </div>
         <div className={`p-3 rounded-xl ${style.bg} ${style.text} shadow-inner`}>
-          {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: 2.5 })}
+          {React.cloneElement(icon as React.ReactElement<{ size?: number; strokeWidth?: number }>, { size: 24, strokeWidth: 2.5 })}
         </div>
       </div>
     </div>

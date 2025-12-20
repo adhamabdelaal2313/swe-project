@@ -133,12 +133,6 @@ const TaskList = () => {
     }
   };
 
-  const getPriorityClass = (priority: string) => {
-    if (priority === 'HIGH') return 'text-red-400';
-    if (priority === 'MEDIUM') return 'text-orange-400';
-    return 'text-emerald-400';
-  };
-
   const [activeDropdown, setActiveDropdown] = useState<{ id: number; field: string } | null>(null);
 
   const handleInPlaceUpdate = async (id: number, field: string, value: any) => {
