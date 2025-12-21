@@ -3,16 +3,18 @@
 ## Table of Contents
 
 1. [Architecture Overview](#architecture-overview)
-2. [Technology Stack](#technology-stack)
-3. [Project Structure](#project-structure)
-4. [Feature Documentation](#feature-documentation)
-5. [API Reference](#api-reference)
-6. [Database Schema](#database-schema)
-7. [Authentication & Security](#authentication--security)
-8. [Development Guide](#development-guide)
-9. [Deployment Guide](#deployment-guide)
-10. [Testing Strategy](#testing-strategy)
-11. [Troubleshooting](#troubleshooting)
+2. [Functional Requirements](#functional-requirements)
+3. [Non-Functional Requirements](#non-functional-requirements)
+4. [Technology Stack](#technology-stack)
+5. [Project Structure](#project-structure)
+6. [Feature Documentation](#feature-documentation)
+7. [API Reference](#api-reference)
+8. [Database Schema](#database-schema)
+9. [Authentication & Security](#authentication--security)
+10. [Development Guide](#development-guide)
+11. [Deployment Guide](#deployment-guide)
+12. [Testing Strategy](#testing-strategy)
+13. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -49,6 +51,148 @@ TeamFlow follows a **Feature-First Architecture** pattern, organizing code by bu
 │  - Activity Logs                        │
 └─────────────────────────────────────────┘
 ```
+
+---
+
+## Functional Requirements
+
+Functional requirements define what the system must do - the specific behaviors and features that TeamFlow must provide.
+
+### 1. User Management
+- **Secure Registration**: Users must be able to register with name, email, and password
+- **Secure Login/Logout**: Users must be able to authenticate and log out securely
+- **Password Hashing**: All passwords must be hashed using industry-standard bcryptjs before storage
+- **User Authentication**: System must validate user credentials and issue JWT tokens
+- **Session Management**: System must maintain secure user sessions using JWT tokens
+
+### 2. Task Management
+- **Create Tasks**: Users must be able to create tasks with the following properties:
+  - Title (required)
+  - Description (optional)
+  - Status (TODO, IN_PROGRESS, DONE)
+  - Priority (LOW, MEDIUM, HIGH)
+  - Team association (optional)
+  - Assignee (optional)
+  - Tags (optional)
+  - Due date (optional)
+- **Read Tasks**: Users must be able to view all their tasks and filter by:
+  - Team
+  - Status
+  - Assignee
+  - Priority
+- **Update Tasks**: Users must be able to modify task properties including:
+  - Title
+  - Description
+  - Status
+  - Priority
+  - Team assignment
+  - Assignee
+  - Tags
+  - Due date
+- **Delete Tasks**: Users must be able to delete their own tasks
+- **Task Visibility**: Users must only see tasks from teams they belong to or tasks assigned to them
+
+### 3. Kanban Board
+- **Visual Board Display**: System must display tasks in a Kanban board format with three columns:
+  - To Do
+  - In Progress
+  - Done
+- **Status Updates**: Users must be able to update task status through the Kanban board interface
+- **Task Movement**: System must support drag-and-drop-style movement of tasks between columns
+- **Team Filtering**: Users must be able to filter Kanban board by team
+- **Real-time Updates**: Task status changes must be reflected immediately in the board
+
+### 4. Team Management
+- **Create Teams**: Users must be able to create teams with:
+  - Team name (required)
+  - Description (optional)
+  - Accent color (optional)
+- **Assign Team Owners**: System must assign creator as team owner
+- **Invite Members**: Team owners/admins must be able to invite members via email
+- **Member Roles**: System must support three role types:
+  - Owner: Full control, can delete team
+  - Admin: Can add/remove members, cannot delete team
+  - Member: View-only access
+- **Remove Members**: Team owners/admins must be able to remove members from teams
+- **Delete Teams**: Team owners must be able to delete teams
+
+### 5. Dashboard
+- **Real-time Statistics**: System must display:
+  - Total task count
+  - Tasks by status (To Do, In Progress, Done)
+  - Task completion rates
+- **Activity Feed**: System must show a live stream of recent team actions including:
+  - User logins
+  - Task creation
+  - Task updates
+  - Team member additions
+- **Quick Actions**: Dashboard must provide quick access to:
+  - Create new task
+  - Create new team
+  - Navigate to other features
+
+---
+
+## Non-Functional Requirements
+
+Non-functional requirements define how the system performs and what constraints it must operate under.
+
+### 1. Security
+- **JWT Protection**: All private API endpoints must be protected by JWT middleware
+- **Password Security**: 
+  - Passwords must be hashed using bcryptjs with salt rounds of 10
+  - Plain text passwords must never be stored
+  - Password validation must enforce complexity requirements:
+    - Minimum 8 characters
+    - At least one uppercase letter
+    - At least one lowercase letter
+    - At least one number
+    - At least one special character (@$!%*?&)
+- **SQL Injection Prevention**: All database queries must use parameterized statements
+- **Input Validation**: All user input must be validated using Joi schemas
+- **CORS Configuration**: System must properly configure CORS for production environment
+- **Token Expiration**: JWT tokens must expire after 7 days
+
+### 2. Performance
+- **Dashboard Load Time**: Dashboard statistics and task lists must load in under 1 second
+- **API Response Time**: API endpoints must respond within acceptable time limits
+- **Database Query Optimization**: Database queries must be optimized for performance
+- **Frontend Build Optimization**: Production builds must be optimized for fast loading
+
+### 3. Scalability
+- **Feature-First Architecture**: Codebase structure must allow adding new modules without bloating existing folders
+- **Modular Design**: Features must be isolated and independently maintainable
+- **Database Scalability**: Database schema must support growth in users, teams, and tasks
+- **Code Organization**: Related code must stay together to reduce merge conflicts
+
+### 4. Responsiveness
+- **Desktop Support**: System must be fully functional on desktop web browsers
+- **Mobile Support**: System must be fully functional on mobile web browsers
+- **Responsive Design**: UI must adapt to different screen sizes and orientations
+- **Touch-Friendly**: Mobile interfaces must support touch interactions
+
+### 5. Reliability
+- **Error Handling**: System must gracefully handle errors and provide user-friendly error messages
+- **Data Integrity**: Database foreign key constraints must ensure data integrity
+- **Activity Logging**: System must log important user actions for audit purposes
+- **Transaction Support**: Critical operations must support database transactions
+
+### 6. Maintainability
+- **Code Documentation**: Code must be well-documented
+- **Consistent Code Style**: Code must follow consistent style guidelines
+- **Testing Coverage**: System must include unit, integration, and system tests
+- **Feature Isolation**: Features must be isolated to allow independent updates
+
+### 7. Usability
+- **Intuitive Interface**: UI must be intuitive and easy to navigate
+- **In-Place Editing**: Tasks must support in-place editing for better user experience
+- **Visual Feedback**: System must provide visual feedback for user actions
+- **Error Messages**: Error messages must be clear and actionable
+
+### 8. Compatibility
+- **Browser Support**: System must support modern web browsers
+- **API Compatibility**: API must follow RESTful principles
+- **Database Compatibility**: System must work with MySQL 8+
 
 ---
 
