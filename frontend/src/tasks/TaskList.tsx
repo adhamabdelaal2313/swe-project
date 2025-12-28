@@ -326,14 +326,14 @@ const TaskList = () => {
         )}
 
         {/* ROWS - Mobile Scroll Container */}
-        <div className="md:hidden overflow-x-auto">
+        <div className="md:hidden overflow-x-auto overflow-y-visible">
           {!loading &&
             filteredTasks.map((task, idx) => (
               <div
                 key={task.id}
                 className={`group border-t border-zinc-100 dark:border-zinc-800/80 px-3 sm:px-4 py-4 sm:py-5 min-w-[600px] flex items-center gap-3 sm:gap-4 bg-white dark:bg-[#111114] hover:bg-indigo-50/30 dark:hover:bg-indigo-500/[0.02] transition-all duration-200 ${
                   idx === filteredTasks.length - 1 ? 'rounded-b-xl sm:rounded-b-2xl' : ''
-                } relative ${activeDropdown?.id === task.id ? 'z-50' : 'z-auto'}`}
+                } relative overflow-visible ${activeDropdown?.id === task.id ? 'z-50' : 'z-auto'}`}
               >
                 <div className="flex-[1.5] min-w-[120px] relative">
                 {activeDropdown?.id === task.id && activeDropdown.field === 'title' ? (
@@ -425,7 +425,7 @@ const TaskList = () => {
                 </div>
                 
                 {activeDropdown?.id === task.id && activeDropdown.field === 'priority' && (
-                  <div className="absolute top-full left-0 mt-2 w-36 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[200] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+                  <div className="absolute top-full right-0 mt-2 w-36 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[9999] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
                     {['LOW', 'MEDIUM', 'HIGH'].map(p => (
                       <button
                         key={p}
@@ -459,7 +459,7 @@ const TaskList = () => {
                 </div>
 
                 {activeDropdown?.id === task.id && activeDropdown.field === 'status' && (
-                  <div className="absolute top-full left-0 mt-2 w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[200] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+                  <div className="absolute top-full right-0 mt-2 w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[9999] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
                     {['TODO', 'IN_PROGRESS', 'DONE'].map(s => (
                       <button
                         key={s}
@@ -505,7 +505,7 @@ const TaskList = () => {
               key={`desktop-${task.id}`}
               className={`hidden md:flex group border-t border-zinc-100 dark:border-zinc-800/80 px-4 lg:px-6 py-4 lg:py-5 items-center gap-4 bg-white dark:bg-[#111114] hover:bg-indigo-50/30 dark:hover:bg-indigo-500/[0.02] transition-all duration-200 ${
                 idx === filteredTasks.length - 1 ? 'rounded-b-2xl' : ''
-              } relative ${activeDropdown?.id === task.id ? 'z-50' : 'z-auto'}`}
+              } relative overflow-visible ${activeDropdown?.id === task.id ? 'z-50' : 'z-auto'}`}
             >
               <div className="flex-[1.5] relative">
                 {activeDropdown?.id === task.id && activeDropdown.field === 'title' ? (
@@ -597,7 +597,7 @@ const TaskList = () => {
                 </div>
                 
                 {activeDropdown?.id === task.id && activeDropdown.field === 'priority' && (
-                  <div className="absolute top-full left-0 mt-2 w-36 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[200] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+                  <div className="absolute top-full right-0 mt-2 w-36 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[9999] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
                     {['LOW', 'MEDIUM', 'HIGH'].map(p => (
                       <button
                         key={p}
@@ -631,7 +631,7 @@ const TaskList = () => {
                 </div>
 
                 {activeDropdown?.id === task.id && activeDropdown.field === 'status' && (
-                  <div className="absolute top-full left-0 mt-2 w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[200] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+                  <div className="absolute top-full right-0 mt-2 w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[9999] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
                     {['TODO', 'IN_PROGRESS', 'DONE'].map(s => (
                       <button
                         key={s}
