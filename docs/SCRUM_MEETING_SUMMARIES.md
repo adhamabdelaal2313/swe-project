@@ -230,6 +230,3 @@ This document contains weekly scrum meeting summaries based on commit history an
 - Ali Kabbani (alykabbani5)
 
 ---
-
-*This document was automatically generated based on git commit history and timestamps.*
-
