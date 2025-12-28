@@ -19,15 +19,29 @@ const app = express();
 
 // Configure CORS to allow requests from Vercel frontend
 const getAllowedOrigins = () => {
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  const origins = [];
+  
+  // Always allow localhost in development
+  if (isDevelopment) {
+    origins.push('http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:3000');
+  }
+  
+  // Add production origins from FRONTEND_URL
   if (process.env.FRONTEND_URL) {
     // Support multiple origins separated by commas, remove trailing slashes
-    const origins = process.env.FRONTEND_URL.split(',')
+    const productionOrigins = process.env.FRONTEND_URL.split(',')
       .map(url => url.trim().replace(/\/$/, '')); // Remove trailing slashes
+    origins.push(...productionOrigins);
+  }
+  
+  if (origins.length > 0) {
     console.log(`[CORS] Allowed origins configured: ${origins.join(', ')}`);
     return origins;
   }
-  // In development or if FRONTEND_URL not set, allow all origins
-  console.log('[CORS] FRONTEND_URL not set, allowing all origins');
+  
+  // If no origins configured, allow all (fallback)
+  console.log('[CORS] No origins configured, allowing all origins');
   return '*';
 };
 
@@ -51,7 +65,7 @@ const corsOptions = {
     
     // Check if origin is in allowed list
     if (Array.isArray(allowedOrigins) && allowedOrigins.includes(origin)) {
-      console.log(`[CORS] Origin ${origin} is allowed`);
+      console.log(`[CORS] ✅ Origin ${origin} is allowed`);
       callback(null, true);
     } else {
       console.log(`[CORS] ❌ Blocked origin: ${origin}`);

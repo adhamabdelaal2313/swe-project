@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Edit2, Trash2 } from 'lucide-react';
 import TaskModal from './TaskModal';
 import { useAuth } from '../portal/Context/AuthContext';
@@ -133,7 +134,8 @@ const TaskList = () => {
     }
   };
 
-  const [activeDropdown, setActiveDropdown] = useState<{ id: number; field: string } | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<{ id: number; field: string; position?: { top: number; right: number } } | null>(null);
+  const triggerRefs = useRef<Map<string, HTMLElement>>(new Map());
 
   const handleInPlaceUpdate = async (id: number, field: string, value: any) => {
     try {
@@ -148,12 +150,47 @@ const TaskList = () => {
     }
   };
 
+  const getDropdownPosition = (taskId: number, field: string) => {
+    const key = `${taskId}-${field}`;
+    const element = triggerRefs.current.get(key);
+    if (!element) return { top: 0, right: 0 };
+    const rect = element.getBoundingClientRect();
+    return {
+      top: rect.bottom + window.scrollY + 8,
+      right: window.innerWidth - rect.right + window.scrollX
+    };
+  };
+
   // Close dropdown on outside click
   useEffect(() => {
-    const handleGlobalClick = () => setActiveDropdown(null);
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      // Don't close if clicking inside a dropdown or trigger
+      if (target.closest('[data-dropdown-menu]') || target.closest('[data-dropdown-trigger]')) {
+        return;
+      }
+      setActiveDropdown(null);
+    };
     window.addEventListener('click', handleGlobalClick);
     return () => window.removeEventListener('click', handleGlobalClick);
   }, []);
+
+  // Update dropdown position on scroll/resize
+  useEffect(() => {
+    if (!activeDropdown) return;
+    
+    const handleScroll = () => {
+      const position = getDropdownPosition(activeDropdown.id, activeDropdown.field);
+      setActiveDropdown(prev => prev ? { ...prev, position } : null);
+    };
+    
+    window.addEventListener('scroll', handleScroll, true);
+    window.addEventListener('resize', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [activeDropdown?.id, activeDropdown?.field]);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const filteredTasks = tasks.filter((t) => {
@@ -283,9 +320,10 @@ const TaskList = () => {
       </div>
 
       {/* TABLE */}
-      <div className="bg-white dark:bg-[#111114] border border-zinc-200 dark:border-zinc-800/70 rounded-xl sm:rounded-2xl shadow-xl dark:shadow-black/40 transition-all duration-300 overflow-hidden">
-        {/* Desktop Table Header */}
-        <div className="hidden md:flex items-center px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em] relative">
+      <div className="relative z-0">
+        <div className="bg-white dark:bg-[#111114] border border-zinc-200 dark:border-zinc-800/70 rounded-xl sm:rounded-2xl shadow-xl dark:shadow-black/40 transition-all duration-300 overflow-hidden">
+          {/* Desktop Table Header */}
+          <div className="hidden md:flex items-center px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em] relative">
           <div className="absolute bottom-0 left-0 h-[2px] w-12 bg-indigo-500 rounded-full" />
           <div className="flex-[1.5]">Task Details</div>
           <div className="flex-[1.5]">Description</div>
@@ -406,6 +444,11 @@ const TaskList = () => {
 
               <div className="flex-1 relative">
                 <div 
+                  data-dropdown-trigger
+                  ref={(el) => {
+                    if (el) triggerRefs.current.set(`${task.id}-priority`, el);
+                    else triggerRefs.current.delete(`${task.id}-priority`);
+                  }}
                   className={`cursor-pointer hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
                     task.priority === 'HIGH' ? 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30' :
                     task.priority === 'MEDIUM' ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30' :
@@ -413,7 +456,8 @@ const TaskList = () => {
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setActiveDropdown(activeDropdown?.id === task.id && activeDropdown.field === 'priority' ? null : { id: task.id, field: 'priority' });
+                    const position = getDropdownPosition(task.id, 'priority');
+                    setActiveDropdown(activeDropdown?.id === task.id && activeDropdown.field === 'priority' ? null : { id: task.id, field: 'priority', position });
                   }}
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${
@@ -424,8 +468,8 @@ const TaskList = () => {
                   <span className="text-[8px] opacity-40">▼</span>
                 </div>
                 
-                {activeDropdown?.id === task.id && activeDropdown.field === 'priority' && (
-                  <div className="absolute top-full right-0 mt-2 w-36 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[9999] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+                {activeDropdown?.id === task.id && activeDropdown.field === 'priority' && createPortal(
+                  <div data-dropdown-menu className="fixed w-36 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[99999] overflow-hidden animate-in fade-in zoom-in duration-150" style={{ top: `${activeDropdown.position?.top || 0}px`, right: `${activeDropdown.position?.right || 0}px` }} onClick={e => e.stopPropagation()}>
                     {['LOW', 'MEDIUM', 'HIGH'].map(p => (
                       <button
                         key={p}
@@ -438,16 +482,23 @@ const TaskList = () => {
                         {p}
                       </button>
                     ))}
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
 
               <div className="flex-1 relative">
                 <div 
+                  data-dropdown-trigger
+                  ref={(el) => {
+                    if (el) triggerRefs.current.set(`${task.id}-status`, el);
+                    else triggerRefs.current.delete(`${task.id}-status`);
+                  }}
                   className={`${getStatusBadgeClass(task.status)} cursor-pointer hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-2 px-3 py-1.5 uppercase tracking-tighter rounded-xl !border-2`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setActiveDropdown(activeDropdown?.id === task.id && activeDropdown.field === 'status' ? null : { id: task.id, field: 'status' });
+                    const position = getDropdownPosition(task.id, 'status');
+                    setActiveDropdown(activeDropdown?.id === task.id && activeDropdown.field === 'status' ? null : { id: task.id, field: 'status', position });
                   }}
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${
@@ -458,8 +509,8 @@ const TaskList = () => {
                   <span className="text-[8px] opacity-40">▼</span>
                 </div>
 
-                {activeDropdown?.id === task.id && activeDropdown.field === 'status' && (
-                  <div className="absolute top-full right-0 mt-2 w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[9999] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+                {activeDropdown?.id === task.id && activeDropdown.field === 'status' && createPortal(
+                  <div data-dropdown-menu className="fixed w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[99999] overflow-hidden animate-in fade-in zoom-in duration-150" style={{ top: `${activeDropdown.position?.top || 0}px`, right: `${activeDropdown.position?.right || 0}px` }} onClick={e => e.stopPropagation()}>
                     {['TODO', 'IN_PROGRESS', 'DONE'].map(s => (
                       <button
                         key={s}
@@ -474,7 +525,8 @@ const TaskList = () => {
                         {s.replace('_', ' ')}
                       </button>
                     ))}
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
 
@@ -578,6 +630,11 @@ const TaskList = () => {
 
               <div className="flex-1 relative">
                 <div 
+                  data-dropdown-trigger
+                  ref={(el) => {
+                    if (el) triggerRefs.current.set(`${task.id}-priority`, el);
+                    else triggerRefs.current.delete(`${task.id}-priority`);
+                  }}
                   className={`cursor-pointer hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
                     task.priority === 'HIGH' ? 'bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30' :
                     task.priority === 'MEDIUM' ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30' :
@@ -585,7 +642,8 @@ const TaskList = () => {
                   }`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setActiveDropdown(activeDropdown?.id === task.id && activeDropdown.field === 'priority' ? null : { id: task.id, field: 'priority' });
+                    const position = getDropdownPosition(task.id, 'priority');
+                    setActiveDropdown(activeDropdown?.id === task.id && activeDropdown.field === 'priority' ? null : { id: task.id, field: 'priority', position });
                   }}
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${
@@ -596,8 +654,8 @@ const TaskList = () => {
                   <span className="text-[8px] opacity-40">▼</span>
                 </div>
                 
-                {activeDropdown?.id === task.id && activeDropdown.field === 'priority' && (
-                  <div className="absolute top-full right-0 mt-2 w-36 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[9999] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+                {activeDropdown?.id === task.id && activeDropdown.field === 'priority' && createPortal(
+                  <div data-dropdown-menu className="fixed w-36 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[99999] overflow-hidden animate-in fade-in zoom-in duration-150" style={{ top: `${activeDropdown.position?.top || 0}px`, right: `${activeDropdown.position?.right || 0}px` }} onClick={e => e.stopPropagation()}>
                     {['LOW', 'MEDIUM', 'HIGH'].map(p => (
                       <button
                         key={p}
@@ -610,16 +668,23 @@ const TaskList = () => {
                         {p}
                       </button>
                     ))}
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
 
               <div className="flex-1 relative">
                 <div 
+                  data-dropdown-trigger
+                  ref={(el) => {
+                    if (el) triggerRefs.current.set(`${task.id}-status`, el);
+                    else triggerRefs.current.delete(`${task.id}-status`);
+                  }}
                   className={`${getStatusBadgeClass(task.status)} cursor-pointer hover:scale-105 active:scale-95 transition-all inline-flex items-center gap-2 px-3 py-1.5 uppercase tracking-tighter rounded-xl !border-2`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setActiveDropdown(activeDropdown?.id === task.id && activeDropdown.field === 'status' ? null : { id: task.id, field: 'status' });
+                    const position = getDropdownPosition(task.id, 'status');
+                    setActiveDropdown(activeDropdown?.id === task.id && activeDropdown.field === 'status' ? null : { id: task.id, field: 'status', position });
                   }}
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${
@@ -630,8 +695,8 @@ const TaskList = () => {
                   <span className="text-[8px] opacity-40">▼</span>
                 </div>
 
-                {activeDropdown?.id === task.id && activeDropdown.field === 'status' && (
-                  <div className="absolute top-full right-0 mt-2 w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[9999] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+                {activeDropdown?.id === task.id && activeDropdown.field === 'status' && createPortal(
+                  <div data-dropdown-menu className="fixed w-44 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[99999] overflow-hidden animate-in fade-in zoom-in duration-150" style={{ top: `${activeDropdown.position?.top || 0}px`, right: `${activeDropdown.position?.right || 0}px` }} onClick={e => e.stopPropagation()}>
                     {['TODO', 'IN_PROGRESS', 'DONE'].map(s => (
                       <button
                         key={s}
@@ -646,7 +711,8 @@ const TaskList = () => {
                         {s.replace('_', ' ')}
                       </button>
                     ))}
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
 
@@ -668,6 +734,7 @@ const TaskList = () => {
               </div>
             </div>
           ))}
+        </div>
       </div>
 
       <TaskModal
