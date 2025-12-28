@@ -11,11 +11,7 @@
 7. [API Reference](#api-reference)
 8. [Database Schema](#database-schema)
 9. [Authentication & Security](#authentication--security)
-10. [Development Guide](#development-guide)
-11. [Deployment Guide](#deployment-guide)
-12. [Testing Strategy](#testing-strategy)
-13. [Troubleshooting](#troubleshooting)
-
+10. [Testing Strategy](#testing-strategy)
 ---
 
 ## Architecture Overview
