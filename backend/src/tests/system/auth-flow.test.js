@@ -70,7 +70,13 @@ describe('Authentication System Flow', () => {
 
   it('should handle invalid login attempt and prevent access', async () => {
     // Attempt login with wrong credentials
-    db.query.mockResolvedValueOnce([[]]); // User not found
+    // Mock all fallback queries (the login function tries 3 different queries)
+    // Plus the debug query that lists all users
+    db.query
+      .mockResolvedValueOnce([[]]) // First query: LOWER(TRIM(email)) = ? - User not found
+      .mockResolvedValueOnce([[]]) // Second query: LOWER(email) = ? - User not found
+      .mockResolvedValueOnce([[]]) // Third query: email = ? - User not found
+      .mockResolvedValueOnce([[]]); // Debug query: SELECT email FROM users LIMIT 5
 
     const loginRes = await request(app)
       .post('/api/portal/login')
