@@ -64,7 +64,7 @@ const PriorityBadge = ({
       </div>
       
       {isOpen && (
-        <div className="absolute top-full right-0 mt-2 w-32 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl z-[200] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
+        <div className="absolute top-full right-0 mt-2 w-32 bg-white dark:bg-zinc-900 border-2 border-zinc-300 dark:border-zinc-800 rounded-xl shadow-2xl z-[200] overflow-hidden animate-in fade-in zoom-in duration-150" onClick={e => e.stopPropagation()}>
           {(['LOW', 'MEDIUM', 'HIGH'] as Priority[]).map(p => (
             <button
               key={p}
@@ -424,7 +424,7 @@ export default function Kanban() {
     <div className="w-full min-h-screen font-sans p-3 sm:p-4 md:p-6">
       
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-10 px-3 sm:px-0">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-10 px-3 sm:px-0 pt-14 sm:pt-16 md:pt-0">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
               <h1 className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-white">Kanban Board</h1>

@@ -19,13 +19,13 @@ export default function ActivityChart({ data }: ActivityChartProps) {
   const isDark = theme === 'dark';
 
   return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 h-[400px] shadow-xl shadow-zinc-200/50 dark:shadow-none relative overflow-hidden">
+    <div className="bg-white dark:bg-zinc-900 border-2 border-zinc-300 dark:border-zinc-800 rounded-xl sm:rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-8 h-[300px] sm:h-[350px] md:h-[400px] shadow-xl shadow-zinc-200/50 dark:shadow-none relative overflow-hidden w-full min-w-0">
       <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-3xl -z-10 rounded-full" />
-      <h2 className="text-xl font-black text-zinc-900 dark:text-white mb-8 flex items-center gap-3">
-        <div className="w-2 h-6 bg-indigo-500 rounded-full" />
-        Activity Overview
+      <h2 className="text-base sm:text-lg md:text-xl font-black text-zinc-900 dark:text-white mb-4 sm:mb-6 md:mb-8 flex items-center gap-2 sm:gap-3">
+        <div className="w-1.5 sm:w-2 h-4 sm:h-5 md:h-6 bg-indigo-500 rounded-full" />
+        <span className="truncate">Activity Overview</span>
       </h2>
-      <div className="h-[280px] w-full">
+      <div className="h-[200px] sm:h-[240px] md:h-[280px] w-full min-w-0">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData}>
             <defs>

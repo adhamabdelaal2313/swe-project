@@ -38,30 +38,118 @@ const login = async (req, res) => {
     }
 
     email = email.trim().toLowerCase();
+    password = password.trim(); // Trim password to handle whitespace issues
 
-    // Query user from database
-    const [users] = await db.query(
-      'SELECT id, name, email, password, role FROM users WHERE email = ?',
+    // Query user from database - try multiple approaches for email matching
+    let [users] = await db.query(
+      'SELECT id, name, email, password, role FROM users WHERE LOWER(TRIM(email)) = ?',
       [email]
     );
 
+    // Fallback: try case-insensitive match without TRIM if first query fails
+    if (users.length === 0) {
+      [users] = await db.query(
+        'SELECT id, name, email, password, role FROM users WHERE LOWER(email) = ?',
+        [email]
+      );
+    }
+
+    // Fallback: try exact match if still not found
+    if (users.length === 0) {
+      [users] = await db.query(
+        'SELECT id, name, email, password, role FROM users WHERE email = ?',
+        [email]
+      );
+    }
+
     if (users.length === 0) {
       console.log(`Login attempt failed: Email ${email} not found`);
+      // Debug: list all emails in database (first 5)
+      try {
+        const [allUsers] = await db.query('SELECT email FROM users LIMIT 5');
+        console.log('Available emails in database:', allUsers.map(u => u.email));
+      } catch (e) {
+        console.error('Could not fetch user list:', e.message);
+      }
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
     const user = users[0];
     
-    // Check password
-    let isMatch = await bcrypt.compare(password, user.password);
+    // Debug logging (remove in production)
+    console.log(`Login attempt for: ${email}`);
+    console.log(`Password hash starts with: ${user.password.substring(0, 10)}...`);
+    console.log(`Password hash length: ${user.password.length}`);
     
-    // Fallback for demo/plain-text passwords (not for production)
-    if (!isMatch && !user.password.startsWith('$2')) {
-      isMatch = (password === user.password);
+    // Check password - handle multiple hash formats
+    let isMatch = false;
+    
+    if (user.password && user.password.startsWith('$2')) {
+      // Bcrypt hash (standard format: $2a$, $2b$, $2y$)
+      isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        const trimmedDbPassword = user.password.trim();
+        if (trimmedDbPassword !== user.password) {
+          isMatch = await bcrypt.compare(password, trimmedDbPassword);
+        }
+      }
+    } else if (user.password && user.password.startsWith('b0')) {
+      // Passwords starting with 'b0' - likely missing '$2' prefix from bcrypt hash
+      // Try adding '$2' prefix and compare
+      console.log(`⚠️ Warning: Password hash starts with 'b0' for user ${email} - attempting to fix`);
+      
+      // Try with $2 prefix added (common bcrypt corruption)
+      const fixedHash = '$2' + user.password;
+      try {
+        isMatch = await bcrypt.compare(password, fixedHash);
+        if (isMatch) {
+          console.log(`✅ Password matched with fixed hash. Updating database...`);
+          // Update the password in database with correct format
+          await db.query('UPDATE users SET password = ? WHERE id = ?', [fixedHash, user.id]);
+          console.log(`✅ Password hash fixed in database for ${email}`);
+        }
+      } catch (e) {
+        console.log('Bcrypt comparison failed with fixed hash');
+      }
+      
+      // If that doesn't work, try plain text comparison
+      if (!isMatch) {
+        isMatch = (password === user.password || password === user.password.trim());
+        
+        // If password matches as plain text, hash it properly
+        if (isMatch) {
+          console.log(`⚠️ Password matched as plain text. Rehashing for user ${email}...`);
+          try {
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password, salt);
+            await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, user.id]);
+            console.log(`✅ Password rehashed successfully for ${email}`);
+          } catch (e) {
+            console.error('Failed to rehash password:', e.message);
+          }
+        }
+      }
+    } else {
+      // Plain text fallback or unknown format
+      isMatch = (password === user.password || password === user.password.trim());
+      
+      // If password matches but is plain text, hash it properly
+      if (isMatch && user.password.length < 60) {
+        console.log(`⚠️ Password stored as plain text for user ${email}. Hashing now...`);
+        try {
+          const salt = await bcrypt.genSalt(10);
+          const hashedPassword = await bcrypt.hash(password, salt);
+          await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, user.id]);
+          console.log(`✅ Password hashed successfully for ${email}`);
+        } catch (e) {
+          console.error('Failed to hash password:', e.message);
+        }
+      }
     }
 
     if (!isMatch) {
       console.log(`Login attempt failed: Password mismatch for ${email}`);
+      console.log(`Provided password length: ${password.length}`);
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
@@ -92,10 +180,14 @@ const register = async (req, res) => {
       return res.status(400).json({ message: error.details[0].message });
     }
 
-    const { name, email, password } = value;
+    const { name, email: rawEmail, password } = value;
+    
+    // Normalize email (trim and lowercase) to match login behavior
+    const email = rawEmail.trim().toLowerCase();
+    const normalizedPassword = password.trim();
 
-    // Check if user already exists
-    const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
+    // Check if user already exists (case-insensitive)
+    const [existing] = await db.query('SELECT id FROM users WHERE LOWER(TRIM(email)) = ?', [email]);
     
     if (existing.length > 0) {
       return res.status(409).json({ message: 'User with this email already exists' });
@@ -103,7 +195,7 @@ const register = async (req, res) => {
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(normalizedPassword, salt);
 
     // Create new user
     const [result] = await db.query(

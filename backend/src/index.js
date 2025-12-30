@@ -10,6 +10,7 @@ const tasksRoutes = require('./tasks/tasks.routes');
 const kanbanRoutes = require('./kanban/kanban.routes');
 const teamsRoutes = require('./teams/teams.routes');
 const dashboardRoutes = require('./dashboard/dashboard.routes');
+const adminRoutes = require('./admin/admin.routes');
 
 // Initialize database connection
 require('./config/db.config.js'); 
@@ -95,7 +96,8 @@ app.use('/api/portal', portalRoutes);
 app.use('/api/tasks', tasksRoutes);
 app.use('/api/kanban', kanbanRoutes);
 app.use('/api/teams', teamsRoutes);
-app.use('/api/dashboard', dashboardRoutes); 
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/admin', adminRoutes); 
 
 // 4. Serve static files from the frontend/dist folder
 // This includes favicon, images, and other assets

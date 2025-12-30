@@ -155,9 +155,10 @@ const TaskList = () => {
     const element = triggerRefs.current.get(key);
     if (!element) return { top: 0, right: 0 };
     const rect = element.getBoundingClientRect();
+    // For fixed positioning, use viewport coordinates directly (no scroll offset)
     return {
-      top: rect.bottom + window.scrollY + 8,
-      right: window.innerWidth - rect.right + window.scrollX
+      top: rect.bottom + 4, // Small gap below button
+      right: window.innerWidth - rect.right
     };
   };
 
@@ -223,7 +224,7 @@ const TaskList = () => {
   return (
     <div className="w-full min-h-screen font-sans">
       {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 pt-14 sm:pt-16 md:pt-0">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
             <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white">Tasks</h1>
@@ -258,7 +259,7 @@ const TaskList = () => {
               placeholder="Search tasks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white dark:bg-[#09090b] border border-zinc-200 dark:border-zinc-800 rounded-lg pl-9 pr-3 py-2 sm:py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm dark:shadow-none transition-colors"
+              className="w-full bg-white dark:bg-[#09090b] border-2 border-zinc-300 dark:border-zinc-800 rounded-lg pl-9 pr-3 py-2 sm:py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 dark:placeholder:text-zinc-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 shadow-md dark:shadow-none transition-colors"
             />
           </div>
 
@@ -321,9 +322,9 @@ const TaskList = () => {
 
       {/* TABLE */}
       <div className="relative z-0">
-        <div className="bg-white dark:bg-[#111114] border border-zinc-200 dark:border-zinc-800/70 rounded-xl sm:rounded-2xl shadow-xl dark:shadow-black/40 transition-all duration-300 overflow-hidden">
-          {/* Desktop Table Header */}
-          <div className="hidden md:flex items-center px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em] relative">
+      <div className="bg-white dark:bg-[#111114] border border-zinc-200 dark:border-zinc-800/70 rounded-xl sm:rounded-2xl shadow-xl dark:shadow-black/40 transition-all duration-300 overflow-hidden">
+        {/* Desktop Table Header */}
+        <div className="hidden md:flex items-center px-4 lg:px-6 py-3 lg:py-4 bg-gradient-to-r from-zinc-50 to-white dark:from-zinc-900/80 dark:to-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em] relative">
           <div className="absolute bottom-0 left-0 h-[2px] w-12 bg-indigo-500 rounded-full" />
           <div className="flex-[1.5]">Task Details</div>
           <div className="flex-[1.5]">Description</div>

@@ -77,7 +77,7 @@ export function CreateTeamModal({ isOpen, onClose, onTeamCreated }: CreateTeamMo
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl w-full max-w-md shadow-2xl relative overflow-hidden my-auto">
+      <div className="bg-white dark:bg-zinc-900 border-2 border-zinc-300 dark:border-zinc-800 rounded-xl w-full max-w-md shadow-2xl relative overflow-hidden my-auto">
         
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-zinc-100 dark:border-zinc-800">

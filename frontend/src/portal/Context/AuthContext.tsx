@@ -74,13 +74,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async (email: string, password: string): Promise<AuthResponse> => {
     try {
-      const response = await fetch(apiUrl('/api/portal/login'), {
+      const url = apiUrl('/api/portal/login');
+      console.log('[Login] Attempting login to:', url);
+      console.log('[Login] Email:', email);
+      
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
+      console.log('[Login] Response status:', response.status);
+      console.log('[Login] Response ok:', response.ok);
+
+      let data;
+      try {
+        data = await response.json();
+        console.log('[Login] Response data:', data);
+      } catch (parseError) {
+        const text = await response.text();
+        console.error('[Login] Failed to parse JSON. Response text:', text);
+        return { 
+          success: false, 
+          message: `Server error: ${response.status} ${response.statusText}` 
+        };
+      }
 
       if (response.ok) {
         setUser(data.user);
@@ -89,6 +107,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.setItem('teamflow_token', data.token);
         return { success: true };
       }
+      
+      console.error('[Login] Login failed:', data.message || 'Unknown error');
       return { success: false, message: data.message || 'Login failed' };
     } catch (error) {
       console.error('Login error:', error);

@@ -189,7 +189,7 @@ export default function Teams() {
       <div className="absolute top-0 right-0 w-[300px] sm:w-[400px] md:w-[500px] h-[300px] sm:h-[400px] md:h-[500px] bg-indigo-500/5 blur-[120px] -z-10 pointer-events-none rounded-full" />
 
       {/* HEADER */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-12">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 md:mb-12 pt-14 sm:pt-16 md:pt-0">
           <div className="min-w-0 flex-1">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-zinc-900 dark:text-white mb-1 sm:mb-2 tracking-tight">Teams</h1>
             <p className="text-xs sm:text-sm md:text-base text-zinc-500 dark:text-zinc-400 font-medium">Collaborate and manage your team members effortlessly.</p>

@@ -1,5 +1,5 @@
--- Active: 1764506266104@@shortline.proxy.rlwy.net@25116@teamflow_project
-USE teamflow_project;
+-- Active: 1764506266104@@shinkansen.proxy.rlwy.net@22016@railway
+USE railway;
 
 -- Drop tables in correct order to avoid FK errors
 DROP TABLE IF EXISTS activities;

@@ -3,7 +3,9 @@ import type { ReactNode } from 'react';
 
 interface SidebarContextType {
   isOpen: boolean;
+  isCollapsed: boolean;
   toggle: () => void;
+  toggleCollapse: () => void;
   open: () => void;
   close: () => void;
 }
@@ -11,14 +13,50 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
 
 export const SidebarProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  // Default to collapsed on desktop (always visible), closed on mobile
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return false;
+  });
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    // On desktop, start collapsed (quick sidebar always visible)
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return false;
+  });
 
-  const toggle = () => setIsOpen(prev => !prev);
-  const open = () => setIsOpen(true);
-  const close = () => setIsOpen(false);
+  const toggle = () => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      // On desktop: toggle between collapsed and expanded (never fully hidden)
+      setIsCollapsed(prev => !prev);
+      setIsOpen(true); // Keep it open on desktop
+    } else {
+      // On mobile: toggle show/hide
+      setIsOpen(prev => !prev);
+    }
+  };
+  
+  const toggleCollapse = () => setIsCollapsed(prev => !prev);
+  const open = () => {
+    setIsOpen(true);
+    // On desktop, if opening, default to expanded unless already collapsed
+  };
+  const close = () => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      // On desktop: "close" means collapse, not hide
+      setIsCollapsed(true);
+      setIsOpen(true); // Keep it visible
+    } else {
+      // On mobile: actually close
+      setIsOpen(false);
+    }
+  };
 
   return (
-    <SidebarContext.Provider value={{ isOpen, toggle, open, close }}>
+    <SidebarContext.Provider value={{ isOpen, isCollapsed, toggle, toggleCollapse, open, close }}>
       {children}
     </SidebarContext.Provider>
   );
