@@ -89,15 +89,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       let data;
       try {
-        data = await response.json();
-        console.log('[Login] Response data:', data);
-      } catch (parseError) {
-        const text = await response.text();
-        console.error('[Login] Failed to parse JSON. Response text:', text);
-        return { 
-          success: false, 
-          message: `Server error: ${response.status} ${response.statusText}` 
-        };
+        // Clone the response so we can read it twice if needed
+        const responseClone = response.clone();
+        try {
+          data = await responseClone.json();
+          console.log('[Login] Response data:', data);
+        } catch (parseError) {
+          const text = await response.text();
+          console.error('[Login] Failed to parse JSON. Response text:', text);
+          return { 
+            success: false, 
+            message: `Server error: ${response.status}. Please check Vercel logs for more details.` 
+          };
+        }
+      } catch (err) {
+        console.error('[Login] Error handling response:', err);
+        return { success: false, message: 'Unexpected error processing login response.' };
       }
 
       if (response.ok) {
