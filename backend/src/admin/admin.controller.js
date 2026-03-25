@@ -217,7 +217,7 @@ const getUserStats = async (req, res) => {
     const [regularUsers] = await db.query("SELECT COUNT(*) as count FROM users WHERE role = 'user'");
     const [recentUsers] = await db.query(
       `SELECT COUNT(*) as count FROM users 
-       WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)`
+       WHERE created_at >= NOW() - INTERVAL '7 days'`
     );
 
     res.json({

@@ -22,18 +22,18 @@ const getDashboardStats = async (req, res) => {
 
     // 1. Run SQL Queries
     const [total] = await db.query(`SELECT COUNT(*) as count ${baseSql}`, params);
-    const [todo] = await db.query(`SELECT COUNT(*) as count ${baseSql} ${userRole === 'admin' ? 'WHERE' : 'AND'} status = "TODO"`, params);
-    const [inProgress] = await db.query(`SELECT COUNT(*) as count ${baseSql} ${userRole === 'admin' ? 'WHERE' : 'AND'} status = "IN_PROGRESS"`, params);
-    const [done] = await db.query(`SELECT COUNT(*) as count ${baseSql} ${userRole === 'admin' ? 'WHERE' : 'AND'} status = "DONE"`, params);
+    const [todo] = await db.query(`SELECT COUNT(*) as count ${baseSql} ${userRole === 'admin' ? 'WHERE' : 'AND'} status = 'TODO'`, params);
+    const [inProgress] = await db.query(`SELECT COUNT(*) as count ${baseSql} ${userRole === 'admin' ? 'WHERE' : 'AND'} status = 'IN_PROGRESS'`, params);
+    const [done] = await db.query(`SELECT COUNT(*) as count ${baseSql} ${userRole === 'admin' ? 'WHERE' : 'AND'} status = 'DONE'`, params);
     
     // 2. Fetch Chart Data (Tasks Created in Last 7 days)
     const [chartData] = await db.query(`
       SELECT 
-        DATE_FORMAT(t.created_at, '%a') as name,
+        TO_CHAR(t.created_at, 'Dy') as name,
         COUNT(*) as tasks,
-        DATE(t.created_at) as fullDate
+        t.created_at::DATE as fullDate
       ${baseSql}
-      ${userRole === 'admin' ? 'WHERE' : 'AND'} t.created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+      ${userRole === 'admin' ? 'WHERE' : 'AND'} t.created_at >= CURRENT_DATE - INTERVAL '6 days'
       GROUP BY fullDate, name
       ORDER BY fullDate ASC
     `, params);

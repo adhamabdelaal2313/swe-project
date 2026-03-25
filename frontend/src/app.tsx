@@ -26,16 +26,16 @@ function PageTitle() {
   
   useEffect(() => {
     const titles: Record<string, string> = {
-      '/': 'Portal - TeamFlow',
-      '/portal': 'Portal - TeamFlow',
-      '/dashboard': 'Dashboard - TeamFlow',
-      '/kanban': 'Kanban Board - TeamFlow',
-      '/teams': 'Teams - TeamFlow',
-      '/tasks': 'Tasks - TeamFlow',
-      '/admin': 'Admin Dashboard - TeamFlow',
+      '/': 'Portal - Nexus',
+      '/portal': 'Portal - Nexus',
+      '/dashboard': 'Dashboard - Nexus',
+      '/kanban': 'Kanban Board - Nexus',
+      '/teams': 'Teams - Nexus',
+      '/tasks': 'Tasks - Nexus',
+      '/admin': 'Admin Dashboard - Nexus',
     };
 
-    document.title = titles[location.pathname] || 'TeamFlow';
+    document.title = titles[location.pathname] || 'Nexus';
   }, [location]);
 
   return null;

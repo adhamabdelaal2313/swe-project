@@ -44,7 +44,7 @@ export default function Portal() {
               <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-lg sm:rounded-xl flex items-center justify-center bg-zinc-800/30 border border-zinc-700/50 overflow-hidden">
                 <img 
                   src="/TF-Logo.png"
-                  alt="TeamFlow Logo" 
+                  alt="Nexus Logo" 
                   className="w-full h-full object-contain p-1.5 sm:p-2"
                   onError={(e) => {
                     // Fallback if image fails to load - show text logo instead
@@ -54,20 +54,20 @@ export default function Portal() {
                     if (parent && !parent.querySelector('.fallback-logo')) {
                       const fallback = document.createElement('div');
                       fallback.className = 'fallback-logo text-indigo-400 dark:text-indigo-500 text-xl sm:text-2xl font-black';
-                      fallback.textContent = 'TF';
+                      fallback.textContent = 'NX';
                       parent.appendChild(fallback);
                     }
                   }}
                 />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">TeamFlow</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">Nexus</h1>
             </div>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h1>
           <p className="text-zinc-400 text-xs sm:text-sm px-2">
-            {isLogin ? 'Sign in to continue to TeamFlow' : 'Join TeamFlow and start collaborating'}
+            {isLogin ? 'Sign in to continue to Nexus' : 'Join Nexus and start collaborating'}
           </p>
         </div>
         

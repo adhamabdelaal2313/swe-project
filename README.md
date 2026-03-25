@@ -1,6 +1,6 @@
-# TeamFlow - Feature-First Project Management
+# Nexus - Feature-First Project Management
 
-TeamFlow is a modern, collaborative project management tool built with a focus on simplicity, security, and developer productivity. It follows a **Feature-First Architecture** to ensure the codebase remains clean, scalable, and easy to maintain.
+Nexus is a modern, collaborative project management tool built with a focus on simplicity, security, and developer productivity. It follows a **Feature-First Architecture** to ensure the codebase remains clean, scalable, and easy to maintain.
 
 Prod Link: https://swe-project-indol.vercel.app/dashboard OR https://swe-project-production.up.railway.app/portal
 ---
@@ -115,7 +115,7 @@ cd frontend && npm test
 
 ## 🚀 Deployment
 
-TeamFlow is optimized for production deployment as a single unified service.
+Nexus is optimized for production deployment as a single unified service.
 
 ### 1. Unified Production Build
 The project is configured so the Backend serves the Frontend. To build the entire project for production:

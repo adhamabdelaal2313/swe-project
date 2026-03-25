@@ -26,4 +26,4 @@ dist-ssr
 .env
 
 # Diagrams folder
-docs/diagrams/
+docs/

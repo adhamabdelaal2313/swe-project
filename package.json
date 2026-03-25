@@ -1,7 +1,7 @@
 {
-  "name": "teamflow-project",
+  "name": "nexus-project",
   "version": "1.0.0",
-  "description": "TeamFlow - Full-stack project management application",
+  "description": "Nexus - Full-stack project management application",
   "private": true,
   "scripts": {
     "install:all": "npm install --prefix backend && npm install --prefix frontend",

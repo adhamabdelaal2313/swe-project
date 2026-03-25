@@ -20,8 +20,8 @@ describe('Task Flow Integration', () => {
     localStorage.clear();
     
     // Mock authenticated user
-    localStorage.setItem('teamflow_token', 'mock-token');
-    localStorage.setItem('teamflow_user', JSON.stringify({
+    localStorage.setItem('nexus_token', 'mock-token');
+    localStorage.setItem('nexus_user', JSON.stringify({
       id: 1,
       name: 'Test User',
       email: 'test@example.com',

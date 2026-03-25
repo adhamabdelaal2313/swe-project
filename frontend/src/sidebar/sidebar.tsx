@@ -66,7 +66,7 @@ export default function Sidebar() {
             <div className={`${isCollapsed ? 'w-10 h-10' : 'w-12 h-12'} rounded-xl flex items-center justify-center bg-indigo-100 dark:bg-indigo-950/30 border-2 border-indigo-200 dark:border-indigo-500/20 shadow-md dark:shadow-sm overflow-hidden p-1.5`}>
               <img 
                 src="/TF-Logo.png"
-                alt="TeamFlow Logo" 
+                alt="Nexus Logo" 
                 className="w-full h-full object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
@@ -83,7 +83,7 @@ export default function Sidebar() {
             </div>
             {!effectiveCollapsed && (
               <div className="flex flex-col">
-                <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 tracking-tight leading-none">TeamFlow</span>
+                <span className="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 tracking-tight leading-none">Nexus</span>
                 <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-[0.15em] mt-0.5 ml-0.5">Workspace</span>
               </div>
             )}
@@ -145,7 +145,7 @@ export default function Sidebar() {
                   {user?.name || 'User'}
                 </div>
                 <div className="text-zinc-600 dark:text-zinc-500 text-[10px] leading-tight truncate">
-                  {user?.email || 'user@teamflow.com'}
+                  {user?.email || 'user@nexus.com'}
                 </div>
                 <div className="mt-1">
                   <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-[0.1em] border ${

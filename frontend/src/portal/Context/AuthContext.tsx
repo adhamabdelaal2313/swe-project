@@ -35,8 +35,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     // Check for stored user session
     const initializeAuth = async () => {
-      const storedUser = localStorage.getItem('teamflow_user');
-      const storedToken = localStorage.getItem('teamflow_token');
+      const storedUser = localStorage.getItem('nexus_user');
+      const storedToken = localStorage.getItem('nexus_token');
       
       if (storedUser && storedToken) {
         // Set initial state from storage
@@ -53,12 +53,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             const data = await response.json();
             setUser(data.user);
             setToken(data.token);
-            localStorage.setItem('teamflow_user', JSON.stringify(data.user));
-            localStorage.setItem('teamflow_token', data.token);
+            localStorage.setItem('nexus_user', JSON.stringify(data.user));
+            localStorage.setItem('nexus_token', data.token);
           } else if (response.status === 401) {
             // Token expired or invalid, clear session
-            localStorage.removeItem('teamflow_user');
-            localStorage.removeItem('teamflow_token');
+            localStorage.removeItem('nexus_user');
+            localStorage.removeItem('nexus_token');
             setUser(null);
             setToken(null);
           }
@@ -103,8 +103,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (response.ok) {
         setUser(data.user);
         setToken(data.token);
-        localStorage.setItem('teamflow_user', JSON.stringify(data.user));
-        localStorage.setItem('teamflow_token', data.token);
+        localStorage.setItem('nexus_user', JSON.stringify(data.user));
+        localStorage.setItem('nexus_token', data.token);
         return { success: true };
       }
       
@@ -137,8 +137,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (response.ok) {
         setUser(data.user);
         setToken(data.token);
-        localStorage.setItem('teamflow_user', JSON.stringify(data.user));
-        localStorage.setItem('teamflow_token', data.token);
+        localStorage.setItem('nexus_user', JSON.stringify(data.user));
+        localStorage.setItem('nexus_token', data.token);
         return { success: true };
       }
       return { success: false, message: data.message || 'Registration failed' };
@@ -171,8 +171,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } finally {
       setUser(null);
       setToken(null);
-      localStorage.removeItem('teamflow_user');
-      localStorage.removeItem('teamflow_token');
+      localStorage.removeItem('nexus_user');
+      localStorage.removeItem('nexus_token');
     }
   };
 
